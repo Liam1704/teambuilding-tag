@@ -546,6 +546,7 @@ Feli</textarea>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
   /* =======================================================================
      GETEILTE FOTO-CLOUD (Supabase)
@@ -913,7 +914,13 @@ Feli</textarea>
     if(refreshBtn)refreshBtn.addEventListener('click',load);
 
     var link=location.href.split('#')[0];
-    qr.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&data='+encodeURIComponent(link);
+    (function(){
+      try{
+        if(window.qrcode){var q=qrcode(0,'M');q.addData(link);q.make();qr.src=q.createDataURL(6,16);return;}
+      }catch(e){}
+      // Fallback: externer QR-Dienst (falls die Bibliothek nicht geladen wurde)
+      qr.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(link);
+    })();
 
     setStatus();
     load();
