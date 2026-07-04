@@ -954,7 +954,9 @@ Feli</textarea>
     };
     if(toRetro)toRetro.addEventListener('click',goRetro);
   })();
+</script>
 
+<script>
   // ---------- Konami code (arrow pad + keyboard) → DVD logo ----------
   (function(){
     var pad=document.getElementById('kpad'),msg=document.getElementById('kmsg'),seqEl=document.getElementById('kseq'),dvd=document.getElementById('dvd');
@@ -967,6 +969,8 @@ Feli</textarea>
       if(k===CODE[idx]){
         idx++;msg.classList.remove('hint');
         if(idx===CODE.length){idx=0;refresh();msg.textContent='🕹️ Konami aktiviert!';dvdGo();return;}
+        if(idx===8)msg.textContent='Fast! Jetzt B drücken …';
+        else if(idx===9)msg.textContent='… und A!';
       } else {
         if(!hinted){hinted=true;msg.textContent='Versuche es mit dem Konami Code';msg.classList.add('hint');}
         idx=(k===CODE[0])?1:0;
