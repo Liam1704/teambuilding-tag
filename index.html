@@ -764,7 +764,17 @@ Feli</textarea>
     var t=document.getElementById('rickTitle'),rr=document.getElementById('rr'),fr=document.getElementById('rrFrame'),cl=document.getElementById('rrClose');
     if(!t||!rr) return;
     var n=0,timer;
-    function open(){fr.src='https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0';rr.classList.add('open');}
+    function open(){
+      // muted autoplay startet sofort (kein verräterisches Vorschaubild), danach entstummen
+      fr.src='https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1';
+      rr.classList.add('open');
+      setTimeout(function(){try{
+        var w=fr.contentWindow;
+        w.postMessage('{"event":"command","func":"playVideo","args":""}','*');
+        w.postMessage('{"event":"command","func":"unMute","args":""}','*');
+        w.postMessage('{"event":"command","func":"setVolume","args":[100]}','*');
+      }catch(e){}},1100);
+    }
     function close(){rr.classList.remove('open');fr.src='';}
     function hit(){n++;clearTimeout(timer);timer=setTimeout(function(){n=0;},1200);if(n>=5){n=0;open();}}
     t.addEventListener('click',hit);
@@ -921,6 +931,8 @@ Feli</textarea>
       // Fallback: externer QR-Dienst (falls die Bibliothek nicht geladen wurde)
       qr.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(link);
     })();
+    qr.style.cursor='pointer';qr.title='Seite öffnen';
+    qr.addEventListener('click',function(){window.open(link,'_blank','noopener');});
 
     setStatus();
     load();
