@@ -275,7 +275,7 @@
   body.retro #galHead::after{content:" 📸";}
 
   /* DVD logo */
-  .dvd{position:fixed;top:0;left:0;z-index:300;display:none;padding:10px 16px;border-radius:10px;font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.4rem;color:#fff;background:#4C5DF7;box-shadow:0 8px 24px rgba(0,0,0,.4);will-change:transform;user-select:none;pointer-events:none;}
+  .dvd{position:fixed;top:0;left:0;z-index:300;display:none;padding:13px 21px;border-radius:11px;font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.75rem;color:#fff;background:#4C5DF7;box-shadow:0 8px 24px rgba(0,0,0,.4);will-change:transform;user-select:none;pointer-events:none;}
   .dvd.on{display:block;}
 
   /* Konami pad */
@@ -776,7 +776,7 @@ Feli</textarea>
       }catch(e){}},1100);
     }
     function close(){rr.classList.remove('open');fr.src='';}
-    function hit(){n++;clearTimeout(timer);timer=setTimeout(function(){n=0;},1200);if(n>=5){n=0;open();}}
+    function hit(){n++;clearTimeout(timer);timer=setTimeout(function(){n=0;},1200);if(n>=3){n=0;open();}}
     t.addEventListener('click',hit);
     t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();hit();}});
     cl.addEventListener('click',close);
