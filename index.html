@@ -837,7 +837,7 @@ Feli</textarea>
         if(!meLL){ info.textContent='Standort aktivieren, um Entfernung & Zeit bis „'+label+'" zu sehen.'; return; }
         var m=map.distance(meLL,[stops[idx].lat,stops[idx].lng]);
         var mins=Math.max(1,Math.round(m/80));
-        info.textContent='📍 noch ~'+fmtDist(m)+' bis '+label+' · ~'+mins+' Min zu Fuß'+(ORS?' …':' (Luftlinie)');
+        info.textContent='📍 noch ~'+fmtDist(m)+' bis '+label+' · ~'+mins+' Min zu Fuß'+(ORS?' …':'');
         fetchWalk(idx); // ersetzt die Zeile bei Erfolg durch echte Fußweg-Zeit
       }
 
