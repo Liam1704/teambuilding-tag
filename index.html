@@ -34,7 +34,7 @@
   a{color:inherit;}
   section[id],header[id]{scroll-margin-top:calc(var(--nav-h) + 14px);}
   .wrap{width:100%;max-width:680px;margin:0 auto;padding:0 20px;}
- 
+
   /* NAV */
   .nav{position:sticky;top:0;z-index:50;background:var(--nav-bg);backdrop-filter:saturate(160%) blur(10px);-webkit-backdrop-filter:saturate(160%) blur(10px);border-bottom:1px solid var(--line);}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:var(--nav-h);}
@@ -47,7 +47,7 @@
   .theme-btn:hover{border-color:var(--primary);}
   .theme-btn:active{transform:scale(.94);}
   .theme-btn span{display:block;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .18s ease;}
- 
+
   /* HERO */
   .hero{position:relative;padding:56px 0 44px;overflow:hidden;}
   .blob{position:absolute;border-radius:50%;filter:blur(6px);z-index:0;animation:float 11s ease-in-out infinite;}
@@ -66,13 +66,13 @@
   .rise{opacity:0;animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;}
   .rise.d1{animation-delay:.05s;} .rise.d2{animation-delay:.15s;} .rise.d3{animation-delay:.25s;} .rise.d4{animation-delay:.35s;} .rise.d5{animation-delay:.45s;}
   @keyframes rise{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
- 
+
   /* FACTS */
   .facts{display:flex;flex-wrap:wrap;gap:10px;margin:34px 0 8px;}
   .fact{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:9px 15px;font-weight:700;font-size:.92rem;transition:transform .2s ease,border-color .2s ease,background-color .4s ease;}
   .fact:hover{transform:translateY(-2px);border-color:var(--primary);}
   .fact .emoji{font-size:1.05rem;}
- 
+
   /* WEATHER */
   .weather-card{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-top:26px;}
   .weather-main{display:flex;align-items:center;gap:16px;}
@@ -83,12 +83,12 @@
   .weather-desc{color:var(--muted);font-size:.92rem;}
   .weather-rain{font-size:.92rem;font-weight:800;margin-top:3px;}
   .weather-meta{font-size:.8rem;color:var(--muted);max-width:240px;}
- 
+
   /* SECTION HEAD */
   .sec-head{margin:52px 0 8px;display:flex;align-items:baseline;gap:12px;}
   .sec-head h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.7rem;margin:0;}
   .sec-head .count{font-family:"JetBrains Mono",monospace;color:var(--muted);font-size:.85rem;}
- 
+
   /* PROGRESS */
   .prog-card{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:16px 18px 14px;box-shadow:var(--shadow);margin:22px 0 10px;}
   .prog-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
@@ -101,7 +101,7 @@
   .prog-mark{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;background:var(--surface);border:2.5px solid var(--mc);transform:translate(-50%,-50%);z-index:2;}
   .prog-knob{position:absolute;top:50%;left:0;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--c-laser);transform:translate(-50%,-50%);box-shadow:0 0 0 4px rgba(255,61,113,.25);transition:left .6s ease;z-index:3;display:none;}
   .prog-scale{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:.72rem;color:var(--muted);}
- 
+
   /* TIMELINE */
   .timeline{list-style:none;margin:26px 0 0;padding:0;}
   .stop{position:relative;display:grid;grid-template-columns:52px 1fr;gap:16px;padding-bottom:26px;}
@@ -134,7 +134,7 @@
   .btn-primary:hover{filter:brightness(1.05);}
   .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line);}
   .btn-ghost:hover{border-color:var(--ink);}
- 
+
   /* MAP */
   .mapsec-sub{color:var(--muted);margin:2px 0 16px;}
   #map{height:380px;width:100%;border-radius:var(--radius);border:1.5px solid var(--line);box-shadow:var(--shadow);z-index:0;}
@@ -145,12 +145,16 @@
   .pin{width:38px;height:38px;border-radius:50%;background:#fff;border:3px solid var(--pc);display:grid;place-items:center;font-size:1.1rem;box-shadow:0 4px 10px -3px rgba(0,0,0,.35);}
   .route-traveler-wrap{background:none;border:none;}
   .route-traveler{width:14px;height:14px;border-radius:50%;background:var(--c-laser);border:3px solid #fff;box-shadow:0 0 0 4px rgba(255,61,113,.30),0 2px 6px rgba(0,0,0,.35);}
+  .route-traveler.me{animation:mePulse 1.6s ease-in-out infinite;}
+  @keyframes mePulse{0%,100%{box-shadow:0 0 0 0 rgba(255,61,113,.45),0 2px 6px rgba(0,0,0,.35);}50%{box-shadow:0 0 0 11px rgba(255,61,113,0),0 2px 6px rgba(0,0,0,.35);}}
+  #locBtn{margin:0 0 12px;}
+  @media (prefers-reduced-motion:reduce){.route-traveler.me{animation:none !important;}}
   .pop{font-size:.92rem;line-height:1.5;}
   .pop strong{font-size:1rem;}
   .pop .pop-t{font-family:"JetBrains Mono",monospace;font-size:.8rem;color:#2A38C4;}
   .pop a{color:#2A38C4;font-weight:800;text-decoration:none;}
   .pop a:hover{text-decoration:underline;}
- 
+
   /* TEAM DRAW */
   .draw{margin:22px 0 0;background:linear-gradient(135deg,#141633,#26203F);color:#fff;border-radius:var(--radius);padding:28px 22px 26px;position:relative;overflow:hidden;}
   .draw::before,.draw::after{content:"";position:absolute;border-radius:50%;filter:blur(4px);pointer-events:none;}
@@ -177,15 +181,15 @@
   .team li{background:rgba(255,255,255,.06);border-radius:9px;padding:7px 11px;font-weight:700;font-size:.95rem;animation:popIn .35s ease both;}
   @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.96);}to{opacity:1;transform:none;}}
   .draw-empty{margin-top:16px;color:#FFC1D2;font-weight:700;}
- 
+
   /* FOOTER */
   footer{margin:44px 0 60px;text-align:center;color:var(--muted);font-size:.85rem;}
   footer .ver{font-family:"JetBrains Mono",monospace;display:block;margin-top:6px;opacity:.7;}
- 
+
   /* REVEAL */
   .js .reveal{opacity:0;transform:translateY(16px);}
   .reveal.is-visible{opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease;}
- 
+
   @media (min-width:560px){.stop{grid-template-columns:60px 1fr;}}
   @media (max-width:420px){.teams{grid-template-columns:1fr;} .nav-brand{font-size:.98rem;} .nav-links a{padding:6px 8px;font-size:.82rem;} .theme-btn{width:34px;height:34px;}}
   @media (prefers-reduced-motion:reduce){
@@ -197,30 +201,30 @@
     .stop.is-now .stop-icon,.stop.is-now .live-badge{animation:none;}
     .team li{animation:none;} .draw-btn.spin .zap{animation:none;}
   }
- 
+
   /* ===================== ADDED FEATURES v2.0 ===================== */
- 
+
   /* Smoother theme switch: circular View-Transition reveal from the button */
   ::view-transition-old(root){animation:none;}
   ::view-transition-new(root){animation:vtReveal .55s cubic-bezier(.4,0,.2,1);}
   @keyframes vtReveal{from{clip-path:circle(0% at var(--vt-x,90%) var(--vt-y,7%));}to{clip-path:circle(160% at var(--vt-x,90%) var(--vt-y,7%));}}
   .theme-btn:hover{transform:rotate(12deg);}
- 
+
   /* Clickable hero title */
   h1.title{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
   h1.title:active{transform:scale(.99);}
- 
+
   /* Travel time between stops */
   .hop-info{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-family:"JetBrains Mono",monospace;font-size:.78rem;color:var(--muted);}
   .hop-info .ic{font-size:1rem;}
- 
+
   /* Completed-stop overlay (blurred, centered text over the card) */
   .stop-card{position:relative;}
   .stop-done-ov{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border-radius:var(--radius);z-index:4;backdrop-filter:blur(3px) saturate(.9);-webkit-backdrop-filter:blur(3px) saturate(.9);background:color-mix(in srgb,var(--surface) 55%, transparent);}
   .stop.is-past .stop-done-ov{display:flex;}
   .stop.is-past .stop-card{opacity:1;}
   .stop-done-ov b{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1rem;color:#fff;background:var(--c-lunch);padding:9px 18px;border-radius:999px;transform:rotate(-5deg);box-shadow:0 10px 24px -8px color-mix(in srgb,var(--c-lunch) 70%, transparent);}
- 
+
   /* Weather FX layer */
   .weather-card{position:relative;overflow:hidden;}
   .wfx{position:absolute;inset:0;border-radius:var(--radius);overflow:hidden;pointer-events:none;z-index:0;}
@@ -239,7 +243,7 @@
   .wfx .flake{position:absolute;top:-16px;color:#fff;font-size:.8rem;opacity:.9;animation:snowfall linear infinite;}
   :root[data-theme="dark"] .wfx .flake{color:#dfe0ff;}
   @keyframes snowfall{0%{transform:translateY(-16px) translateX(0) rotate(0);}100%{transform:translateY(220px) translateX(18px) rotate(220deg);}}
- 
+
   /* Gallery / QR */
   .gallery-tools{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch;margin:16px 0;}
   .qr-card{display:flex;gap:14px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);flex:1 1 260px;}
@@ -260,14 +264,14 @@
   :root[data-theme="dark"] .cloud-status.ok{color:#4be0b6;}
   :root[data-theme="dark"] .cloud-status.local{color:#F4A81D;}
   .gal-actions .btn[disabled]{opacity:.6;pointer-events:none;}
- 
+
   /* Lightbox */
   .lb{position:fixed;inset:0;z-index:200;background:rgba(10,10,25,.92);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .25s ease;}
   .lb.open{display:flex;opacity:1;}
   .lb img{max-width:100%;max-height:76vh;border-radius:12px;box-shadow:0 24px 70px rgba(0,0,0,.6);}
   .lb-bar{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center;}
   .lb-close{position:absolute;top:14px;right:16px;font-size:1.6rem;color:#fff;background:none;border:none;cursor:pointer;line-height:1;}
- 
+
   /* Thanks overlay + retro */
   .thanks{position:fixed;inset:0;z-index:260;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(10,10,25,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .4s ease;}
   .thanks.open{display:flex;opacity:1;}
@@ -278,11 +282,11 @@
   .thanks-card h2{font-family:"Fredoka",sans-serif;font-weight:600;margin:6px 0;font-size:1.6rem;}
   .thanks-card p{color:var(--muted);margin:0 0 18px;}
   body.retro #galHead::after{content:" 📸";}
- 
+
   /* DVD logo */
   .dvd{position:fixed;top:0;left:0;z-index:300;display:none;padding:13px 21px;border-radius:11px;font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.75rem;color:#fff;background:#4C5DF7;box-shadow:0 8px 24px rgba(0,0,0,.4);will-change:transform;user-select:none;pointer-events:none;}
   .dvd.on{display:block;}
- 
+
   /* Konami pad */
   .konami{text-align:center;margin:48px 0 0;}
   .kmsg{font-family:"JetBrains Mono",monospace;font-size:.82rem;color:var(--muted);min-height:1.2em;margin:4px 0 14px;}
@@ -294,17 +298,17 @@
   .kpad .up{grid-column:2;grid-row:1;} .kpad .left{grid-column:1;grid-row:2;} .kpad .down{grid-column:2;grid-row:2;} .kpad .right{grid-column:3;grid-row:2;}
   .kpad .kb{grid-column:1;grid-row:3;} .kpad .ka{grid-column:3;grid-row:3;}
   .kseq{font-family:"JetBrains Mono",monospace;letter-spacing:.3em;color:var(--muted);margin-top:12px;min-height:1.4em;font-size:1.1rem;}
- 
+
   /* Rickroll */
   .rr{position:fixed;inset:0;z-index:400;background:#000;display:none;align-items:center;justify-content:center;}
   .rr.open{display:flex;}
   .rr iframe{width:min(92vw,760px);aspect-ratio:16/9;border:0;border-radius:12px;box-shadow:0 0 60px rgba(76,93,247,.4);}
   .rr-close{position:absolute;top:16px;right:18px;font-size:1.7rem;color:#fff;background:none;border:none;cursor:pointer;z-index:1;}
- 
+
   /* Confetti */
   #confetti{position:fixed;inset:0;z-index:250;pointer-events:none;display:none;}
   #confetti.on{display:block;}
- 
+
   @media (max-width:420px){
     .gal-grid{grid-template-columns:repeat(2,1fr);}
     .qr-card{flex:1 1 100%;}
@@ -318,7 +322,7 @@
 </style>
 </head>
 <body>
- 
+
   <nav class="nav">
     <div class="nav-inner wrap">
       <span class="nav-brand" data-scroll="top" role="button" tabindex="0">🎯 Team-Tag</span>
@@ -333,7 +337,7 @@
       </div>
     </div>
   </nav>
- 
+
   <header class="hero" id="top">
     <span class="blob blob-1"></span><span class="blob blob-2"></span><span class="blob blob-3"></span>
     <div class="wrap">
@@ -349,9 +353,9 @@
       </div>
     </div>
   </header>
- 
+
   <main class="wrap">
- 
+
     <section id="wetter" class="reveal">
       <div class="weather-card">
         <div class="wfx" id="wfx" aria-hidden="true"></div>
@@ -367,10 +371,10 @@
         <div class="weather-meta" id="wMeta"></div>
       </div>
     </section>
- 
+
     <section id="ablauf">
       <div class="sec-head"><h2>Der Ablauf</h2><span class="count">// 5 Stationen</span></div>
- 
+
       <div class="prog-card reveal">
         <div class="prog-head">
           <span class="prog-title">Tagesfortschritt</span>
@@ -382,7 +386,7 @@
         </div>
         <div class="prog-scale"><span>09:00</span><span>19:45</span></div>
       </div>
- 
+
       <ol class="timeline">
         <li class="stop reveal" style="--accent:var(--c-breakfast)" data-start="2026-09-17T09:00:00+02:00" data-end="2026-09-17T10:15:00+02:00" data-name="Frühstück" data-emoji="☕">
           <div class="stop-rail"><div class="stop-icon">☕</div></div>
@@ -460,7 +464,7 @@
         </li>
       </ol>
     </section>
- 
+
     <section id="teams" class="draw reveal">
       <span class="draw-eyebrow">// vor dem Match</span>
       <h2>Lasertag: Teams auslosen 🎯</h2>
@@ -475,13 +479,14 @@ Feli</textarea>
       <button class="draw-btn" id="drawBtn"><span class="zap">⚡</span> Teams auslosen</button>
       <div id="result"></div>
     </section>
- 
+
     <section id="karte" class="reveal">
       <div class="sec-head"><h2>Alle Orte auf einen Blick</h2><span class="count">// interaktiv</span></div>
       <p class="mapsec-sub">Tippe auf einen Pin für Details und die Route mit den Öffis.</p>
+      <button class="btn btn-primary" id="locBtn">📍 Mein Standort auf der Karte</button>
       <div id="map"></div>
     </section>
- 
+
     <section id="fotos" class="reveal">
       <div class="sec-head"><h2 id="galHead">Foto-Galerie</h2><span class="count">// gemeinsam</span></div>
       <p class="mapsec-sub" id="galSub">Scan den Code, ladet eure Fotos hoch – hier landen alle Bilder und lassen sich herunterladen.</p>
@@ -501,7 +506,7 @@ Feli</textarea>
       <div class="gal-grid" id="galGrid"></div>
       <p class="gal-empty" id="galEmpty">Noch keine Fotos – macht das erste Bild vom Team-Tag! 📸</p>
     </section>
- 
+
     <section id="konami" class="konami reveal">
       <div class="draw-eyebrow" style="color:var(--muted)">// geheim</div>
       <p class="kmsg" id="kmsg">Psst … kennst du einen geheimen Code? Tippe ihn mit den Pfeilen.</p>
@@ -515,17 +520,17 @@ Feli</textarea>
       </div>
       <div class="kseq" id="kseq"></div>
     </section>
- 
+
     <footer>
       Zusammengestellt für die IT-Abteilung der Ärztekammer Wien
       <span class="ver">// Team-Building-Tag v2.1 · 17.09.2026</span>
     </footer>
- 
+
   </main>
- 
+
   <div class="dvd" id="dvd">DVD</div>
   <canvas id="confetti"></canvas>
- 
+
   <div class="lb" id="lb" role="dialog" aria-modal="true">
     <button class="lb-close" id="lbClose" aria-label="Schließen">✕</button>
     <img id="lbImg" alt="Foto">
@@ -534,7 +539,7 @@ Feli</textarea>
       <button class="btn btn-ghost" id="lbDel">🗑️ Löschen</button>
     </div>
   </div>
- 
+
   <div class="thanks" id="thanks" role="dialog" aria-modal="true">
     <div class="thanks-card">
       <div class="thanks-emoji">🎉</div>
@@ -543,12 +548,12 @@ Feli</textarea>
       <button class="btn btn-primary" id="toRetro">📸 Zum Rückblick</button>
     </div>
   </div>
- 
+
   <div class="rr" id="rr" role="dialog" aria-modal="true">
     <button class="rr-close" id="rrClose" aria-label="Schließen">✕</button>
     <iframe id="rrFrame" title="Überraschung" allow="autoplay; encrypted-media"></iframe>
   </div>
- 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -557,7 +562,7 @@ Feli</textarea>
      GETEILTE FOTO-CLOUD (Supabase)
      Trage hier deine 3 Werte ein, dann teilen sich ALLE Geräte dieselben Fotos.
      Solange url/anonKey leer sind, läuft die Galerie im lokalen Modus.
- 
+
        1) supabase.com -> Projekt anlegen
        2) Storage -> neuen Bucket "fotos" anlegen und auf "Public" stellen
        3) Storage-Policies für den Bucket: anonymen SELECT + INSERT + DELETE erlauben
@@ -571,7 +576,7 @@ Feli</textarea>
 </script>
 <script>
   document.documentElement.classList.add('js');
- 
+
   // In-page navigation (no links -> nothing opens externally)
   (function(){
     document.querySelectorAll('[data-scroll]').forEach(function(el){
@@ -580,7 +585,7 @@ Feli</textarea>
       el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
     });
   })();
- 
+
   // Theme toggle (buttery: circular View-Transition reveal + icon spin)
   (function(){
     var btn=document.getElementById('themeBtn'),icon=document.getElementById('themeIcon'); if(!btn) return;
@@ -605,7 +610,7 @@ Feli</textarea>
       } else { setTimeout(apply,rm?0:210); }
     });
   })();
- 
+
   // Scroll reveal
   (function(){
     var items=document.querySelectorAll('.reveal');
@@ -613,7 +618,7 @@ Feli</textarea>
     var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target);}});},{threshold:.12});
     items.forEach(function(el){io.observe(el);});
   })();
- 
+
   // Day progress
   (function(){
     var track=document.getElementById('progTrack'),fill=document.getElementById('progFill'),knob=document.getElementById('progKnob'),status=document.getElementById('progStatus');
@@ -667,7 +672,7 @@ Feli</textarea>
     }
     update();setInterval(update,30000);
   })();
- 
+
   // Weather (Open-Meteo, no API key)
   (function(){
     var emoji=document.getElementById('wEmoji'),temp=document.getElementById('wTemp'),desc=document.getElementById('wDesc'),rain=document.getElementById('wRain'),meta=document.getElementById('wMeta');
@@ -709,7 +714,7 @@ Feli</textarea>
       } else { fallback(); }
     }).catch(fallback);
   })();
- 
+
   // Interactive map
   (function(){
     if(typeof L==='undefined') return;
@@ -732,17 +737,15 @@ Feli</textarea>
       bounds.push([s.lat,s.lng]);
     });
     map.fitBounds(bounds,{padding:[40,40]});
- 
-    // Animierte Route durch die Stationen (in Reihenfolge)
+
+    // Route-Linie zeichnen + Live-Standort der Person
     (function(){
       var routeCoords=stops.map(function(s){return [s.lat,s.lng];});
       var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var route=L.polyline(routeCoords,{className:'route-line',color:'#4C5DF7',weight:4,opacity:.9,lineCap:'round',lineJoin:'round'}).addTo(map);
-      var travelIcon=L.divIcon({className:'route-traveler-wrap',html:'<div class="route-traveler"></div>',iconSize:[16,16],iconAnchor:[8,8]});
-      var traveler=L.marker(routeCoords[0],{icon:travelIcon,interactive:false,keyboard:false,zIndexOffset:1000});
-      var segs=[],total=0,i;
-      for(i=0;i<routeCoords.length-1;i++){var dd=map.distance(routeCoords[i],routeCoords[i+1]);segs.push(dd);total+=dd;}
-      function playRoute(){
+
+      // Linie zeichnet sich beim ersten Sichtbarwerden (Antippen = erneut)
+      function drawLine(){
         var path=route.getElement();
         if(reduceMotion||!path) return;
         var len=path.getTotalLength();
@@ -750,37 +753,52 @@ Feli</textarea>
         path.style.strokeDasharray=len;
         path.style.strokeDashoffset=len;
         path.getBoundingClientRect();
-        var DUR=2800;
-        path.style.transition='stroke-dashoffset '+DUR+'ms ease-in-out';
+        path.style.transition='stroke-dashoffset 2800ms ease-in-out';
         path.style.strokeDashoffset='0';
-        traveler.addTo(map);
-        var startT=null;
-        function frame(ts){
-          if(startT===null)startT=ts;
-          var t=Math.min(1,(ts-startT)/DUR);
-          var dist=t*total,acc=0,k=0;
-          while(k<segs.length&&acc+segs[k]<dist){acc+=segs[k];k++;}
-          if(k>=segs.length){traveler.setLatLng(routeCoords[routeCoords.length-1]);return;}
-          var f=segs[k]?(dist-acc)/segs[k]:0,a=routeCoords[k],b=routeCoords[k+1];
-          traveler.setLatLng([a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f]);
-          if(t<1)requestAnimationFrame(frame);
-        }
-        requestAnimationFrame(frame);
       }
-      var played=false;
+      var drawn=false;
       if('IntersectionObserver' in window){
-        var ro=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting&&!played){played=true;setTimeout(playRoute,400);}});});
+        var ro=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting&&!drawn){drawn=true;setTimeout(drawLine,400);}});});
         ro.observe(document.getElementById('map'));
-      } else { setTimeout(playRoute,600); }
-      route.on('click',playRoute); // Linie antippen = nochmal abspielen
+      } else { setTimeout(drawLine,600); }
+      route.on('click',function(){drawLine();});
+
+      // ----- Live-Standort: der bewegliche Punkt = Position der Person (GPS) -----
+      var meMarker=null,meCircle=null,watchId=null,centeredOnce=false;
+      var meIcon=L.divIcon({className:'route-traveler-wrap',html:'<div class="route-traveler me"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+      var btn=document.getElementById('locBtn');
+      function onPos(pos){
+        var ll=[pos.coords.latitude,pos.coords.longitude],acc=pos.coords.accuracy||0;
+        if(!meMarker){
+          meCircle=L.circle(ll,{radius:acc,color:'#FF3D71',weight:1,fillColor:'#FF3D71',fillOpacity:.12}).addTo(map);
+          meMarker=L.marker(ll,{icon:meIcon,interactive:false,zIndexOffset:1200}).addTo(map);
+        } else {
+          meMarker.setLatLng(ll);meCircle.setLatLng(ll).setRadius(acc);
+        }
+        if(!centeredOnce){centeredOnce=true;map.fitBounds(bounds.concat([ll]),{padding:[40,40],maxZoom:15});}
+        if(btn){btn.textContent='\uD83D\uDCCD Standort aktiv \u2013 folgt dir';btn.disabled=false;}
+      }
+      function onErr(err){
+        if(btn){btn.disabled=false;btn.textContent='\uD83D\uDCCD Mein Standort auf der Karte';}
+        alert(err&&err.code===1
+          ? 'Standort-Freigabe wurde abgelehnt. Bitte im Browser die Ortung f\u00fcr diese Seite erlauben und erneut tippen.'
+          : 'Standort konnte nicht ermittelt werden. Bitte Ortung/GPS aktivieren und erneut tippen.');
+      }
+      function startLoc(){
+        if(!('geolocation' in navigator)){alert('Dein Browser unterst\u00fctzt keine Standortbestimmung.');return;}
+        if(btn){btn.disabled=true;btn.textContent='\uD83D\uDCCD Suche Standort \u2026';}
+        if(watchId!==null)navigator.geolocation.clearWatch(watchId);
+        watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:10000,timeout:15000});
+      }
+      if(btn)btn.addEventListener('click',startLoc);
     })();
- 
+
     var mapEl=document.getElementById('map');
     if('IntersectionObserver' in window){var mo=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){map.invalidateSize();}});});mo.observe(mapEl);}
     setTimeout(function(){map.invalidateSize();},500);
     window.addEventListener('resize',function(){map.invalidateSize();});
   })();
- 
+
   // Team draw
   (function(){
     var btn=document.getElementById('drawBtn'),input=document.getElementById('names'),result=document.getElementById('result');
@@ -798,7 +816,7 @@ Feli</textarea>
     }
     btn.addEventListener('click',draw);
   })();
- 
+
   // ---------- Completed-stop overlays (blurred "Erledigt" badge) ----------
   (function(){
     document.querySelectorAll('#ablauf .timeline .stop .stop-card').forEach(function(c){
@@ -806,7 +824,7 @@ Feli</textarea>
       c.appendChild(ov);
     });
   })();
- 
+
   // ---------- Rickroll easter egg: click the title 5× ----------
   (function(){
     var t=document.getElementById('rickTitle'),rr=document.getElementById('rr'),fr=document.getElementById('rrFrame'),cl=document.getElementById('rrClose');
@@ -831,7 +849,7 @@ Feli</textarea>
     rr.addEventListener('click',function(e){if(e.target===rr)close();});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
   })();
- 
+
   // ---------- Weather ambient animations ----------
   (function(){
     var box=document.getElementById('wfx'); if(!box) return;
@@ -857,14 +875,14 @@ Feli</textarea>
       }
     };
   })();
- 
+
   // ---------- Photo gallery + QR (shared Supabase cloud, local fallback) ----------
   (function(){
     var grid=document.getElementById('galGrid'),empty=document.getElementById('galEmpty'),up=document.getElementById('upInput'),dlAll=document.getElementById('dlAll'),qr=document.getElementById('qrImg');
     var lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg'),lbDl=document.getElementById('lbDl'),lbDel=document.getElementById('lbDel'),lbClose=document.getElementById('lbClose');
     var refreshBtn=document.getElementById('refreshBtn'),statusEl=document.getElementById('cloudStatus');
     if(!grid) return;
- 
+
     var CFG=window.TBT_CLOUD||{},BUCKET=CFG.bucket||'fotos',cloud=null;
     if(CFG.url&&CFG.anonKey&&window.supabase){
       try{cloud=window.supabase.createClient(CFG.url,CFG.anonKey);}catch(e){cloud=null;}
@@ -875,9 +893,9 @@ Feli</textarea>
       else{statusEl.className='cloud-status local';statusEl.textContent='📱 Lokaler Modus (nur dieses Gerät) – Cloud noch nicht eingerichtet';}
     }
     function setBusy(b){if(refreshBtn){refreshBtn.disabled=b;refreshBtn.textContent=b?'⏳ …':'🔄 Aktualisieren';}}
- 
+
     var LKEY='tbt_photos_v1',photos=[],cur=-1; // photos: [{name,url}]
- 
+
     function render(){
       grid.innerHTML='';
       empty.classList.toggle('hide',photos.length>0);
@@ -893,7 +911,7 @@ Feli</textarea>
     lbClose.addEventListener('click',closeLb);
     lb.addEventListener('click',function(e){if(e.target===lb)closeLb();});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLb();});
- 
+
     // Force a true download, even for cross-origin cloud URLs
     function download(p){
       fetch(p.url).then(function(r){return r.blob();}).then(function(b){
@@ -908,7 +926,7 @@ Feli</textarea>
       if(!photos.length){alert('Noch keine Fotos vorhanden.');return;}
       photos.forEach(function(p,i){setTimeout(function(){download(p);},i*500);});
     });
- 
+
     // Downscale to JPEG; blob for cloud, dataURL for local
     function process(file,cb){
       var reader=new FileReader();
@@ -930,7 +948,7 @@ Feli</textarea>
       var base=(orig||'foto').replace(/\.[^.]+$/,'').replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,40)||'foto';
       return Date.now()+'-'+Math.random().toString(36).slice(2,7)+'-'+base+'.jpg';
     }
- 
+
     // --- Cloud (Supabase Storage) ---
     function cloudList(){
       return cloud.storage.from(BUCKET).list('',{limit:300,sortBy:{column:'created_at',order:'asc'}}).then(function(res){
@@ -941,11 +959,11 @@ Feli</textarea>
         render();
       });
     }
- 
+
     // --- Local (localStorage fallback) ---
     function localLoad(){try{photos=JSON.parse(localStorage.getItem(LKEY)||'[]');}catch(e){photos=[];}render();}
     function localSave(){try{localStorage.setItem(LKEY,JSON.stringify(photos));}catch(e){alert('Speicher voll – bitte ein paar Fotos löschen.');}}
- 
+
     function removePhoto(p){
       if(cloud){return cloud.storage.from(BUCKET).remove([p.name]).then(function(res){if(res.error)throw res.error;});}
       var i=photos.indexOf(p);if(i>=0)photos.splice(i,1);localSave();render();return Promise.resolve();
@@ -967,10 +985,10 @@ Feli</textarea>
         }
       });
     }
- 
+
     up.addEventListener('change',function(){[].forEach.call(up.files,add);up.value='';});
     if(refreshBtn)refreshBtn.addEventListener('click',load);
- 
+
     var link=location.href.split('#')[0];
     (function(){
       try{
@@ -981,12 +999,12 @@ Feli</textarea>
     })();
     qr.style.cursor='pointer';qr.title='Seite öffnen';
     qr.addEventListener('click',function(){window.open(link,'_blank','noopener');});
- 
+
     setStatus();
     load();
     if(cloud)setInterval(function(){if(!document.hidden)cloudList().catch(function(){});},20000);
   })();
- 
+
   // ---------- Confetti + "Danke" + Rückblick ----------
   (function(){
     var cv=document.getElementById('confetti'),thanks=document.getElementById('thanks'),toRetro=document.getElementById('toRetro');
@@ -1022,7 +1040,7 @@ Feli</textarea>
     if(toRetro)toRetro.addEventListener('click',goRetro);
   })();
 </script>
- 
+
 <script>
   // ---------- Konami code (arrow pad + keyboard) -> DVD logo ----------
   (function(){
