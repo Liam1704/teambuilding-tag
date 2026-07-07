@@ -285,12 +285,8 @@
   body.retro #galHead::after{content:" 📸";}
 
   /* DVD logo */
-  .dvd-bg{position:fixed;inset:0;z-index:299;background:#000;display:none;cursor:pointer;}
-  .dvd-bg.on{display:block;}
-  .dvd-bg.on::after{content:"Tippen oder Esc zum Beenden";position:fixed;left:0;right:0;bottom:18px;text-align:center;color:#666;font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.05em;}
-  .dvd{position:fixed;top:0;left:0;z-index:300;display:none;padding:14px 24px;border-radius:12px;font-family:"Fredoka",sans-serif;font-weight:700;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.02em;color:#fff;background:#4C5DF7;box-shadow:0 8px 24px rgba(0,0,0,.4);will-change:transform;user-select:none;pointer-events:none;}
+  .dvd{position:fixed;top:0;left:0;z-index:300;display:none;padding:13px 21px;border-radius:11px;font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.75rem;color:#fff;background:#000;box-shadow:0 8px 24px rgba(0,0,0,.4);will-change:transform;user-select:none;pointer-events:none;}
   .dvd.on{display:block;}
-  .dvd.corner{box-shadow:0 0 0 4px #fff,0 0 44px 12px rgba(255,255,255,.8);}
 
   /* Konami pad */
   .konami{text-align:center;margin:48px 0 0;}
@@ -538,7 +534,6 @@ Feli</textarea>
 
   </main>
 
-  <div class="dvd-bg" id="dvdBg"></div>
   <div class="dvd" id="dvd">DVD</div>
   <canvas id="confetti"></canvas>
 
@@ -1179,30 +1174,17 @@ Feli</textarea>
     });
     function dvdGo(){
       if(dvd.classList.contains('on'))return;
-      var bg=document.getElementById('dvdBg');
-      dvd.classList.add('on'); if(bg)bg.classList.add('on');
+      dvd.classList.add('on');
       var W=innerWidth,H=innerHeight,w=dvd.offsetWidth,h=dvd.offsetHeight;
       var x=Math.random()*(W-w),y=Math.random()*(H-h),vx=2.6,vy=2.2;
-      var colors=['#4C5DF7','#FF3D71','#16C79A','#F4A81D','#FF7A45','#9B8CFF','#00E5FF','#FFD166'],ci=0;
-      dvd.style.background=colors[0];
-      var running=true,cornerT=0;
-      var endT=setTimeout(function(){stopDvd();},20000); // nach ~20 Sekunden automatisch beenden
+      var stop=Date.now()+20000; // ~20 Sekunden
       function step(){
-        if(!running)return;
-        x+=vx;y+=vy;var hx=false,hy=false;
-        if(x<=0){x=0;vx=-vx;hx=true;}else if(x>=W-w){x=W-w;vx=-vx;hx=true;}
-        if(y<=0){y=0;vy=-vy;hy=true;}else if(y>=H-h){y=H-h;vy=-vy;hy=true;}
-        if(hx||hy){ci=(ci+1)%colors.length;dvd.style.background=colors[ci];}
-        if(hx&&hy){ dvd.classList.add('corner'); clearTimeout(cornerT); cornerT=setTimeout(function(){dvd.classList.remove('corner');},900); }
+        x+=vx;y+=vy;
+        if(x<=0){x=0;vx=-vx;}else if(x>=W-w){x=W-w;vx=-vx;}
+        if(y<=0){y=0;vy=-vy;}else if(y>=H-h){y=H-h;vy=-vy;}
         dvd.style.transform='translate('+x+'px,'+y+'px)';
-        requestAnimationFrame(step);
+        if(Date.now()<stop){requestAnimationFrame(step);}else{dvd.classList.remove('on');}
       }
-      function onResize(){ W=innerWidth;H=innerHeight;w=dvd.offsetWidth;h=dvd.offsetHeight; if(x>W-w)x=Math.max(0,W-w); if(y>H-h)y=Math.max(0,H-h); }
-      function stopDvd(){ running=false; clearTimeout(endT); dvd.classList.remove('on','corner'); if(bg){bg.classList.remove('on');bg.onclick=null;} document.removeEventListener('keydown',onKey); window.removeEventListener('resize',onResize); }
-      function onKey(e){ if(e.key==='Escape')stopDvd(); }
-      if(bg)bg.onclick=stopDvd;
-      document.addEventListener('keydown',onKey);
-      window.addEventListener('resize',onResize);
       step();
     }
   })();
