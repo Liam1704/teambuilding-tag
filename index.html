@@ -897,19 +897,31 @@ Feli</textarea>
     setTimeout(function(){map.invalidateSize();},500);
     window.addEventListener('resize',function(){map.invalidateSize();});
 
-    // Karte im Vollbild anzeigen (CSS-basiert, funktioniert auch auf iPhone)
+    // Karte im Vollbild anzeigen – dafür wird sie direkt an <body> gehängt,
+    // damit sie garantiert den ganzen Bildschirm füllt (funktioniert auch auf iPhone).
     (function(){
       var fsBtn=document.getElementById('fsBtn'),fsExit=document.getElementById('fsExit');
+      var origParent=null,origNext=null,isFull=false;
       function setFull(on){
-        mapEl.classList.toggle('map-full',on);
-        document.body.classList.toggle('map-full-active',on);
+        if(on===isFull) return;
+        if(on){
+          origParent=mapEl.parentNode; origNext=mapEl.nextSibling;
+          document.body.appendChild(mapEl);
+          mapEl.classList.add('map-full');
+          document.body.classList.add('map-full-active');
+        } else {
+          mapEl.classList.remove('map-full');
+          document.body.classList.remove('map-full-active');
+          if(origParent){ origParent.insertBefore(mapEl, origNext); }
+        }
+        isFull=on;
         if(fsExit)fsExit.style.display=on?'':'none';
         if(fsBtn)fsBtn.textContent=on?'⛶ Schließen':'⛶ Vollbild';
         setTimeout(function(){map.invalidateSize();},80);
       }
-      if(fsBtn)fsBtn.addEventListener('click',function(){setFull(!mapEl.classList.contains('map-full'));});
+      if(fsBtn)fsBtn.addEventListener('click',function(){setFull(!isFull);});
       if(fsExit)fsExit.addEventListener('click',function(){setFull(false);});
-      document.addEventListener('keydown',function(e){if(e.key==='Escape'&&mapEl.classList.contains('map-full'))setFull(false);});
+      document.addEventListener('keydown',function(e){if(e.key==='Escape'&&isFull)setFull(false);});
     })();
   })();
 
