@@ -577,7 +577,7 @@ Feli</textarea>
   window.TBT_CLOUD = {
     url: 'https://innrwvcmwcsrldhfncea.supabase.co',
     anonKey: 'sb_publishable_HdagcjtDGohwLDFrjHIYXA_M1chVDmL',
-    bucket: 'Fotos'
+    bucket: 'fotos'
   };
   /* OPTIONAL: echte Fussweg-Zeit inline statt Luftlinie.
      Kostenlosen Key holen auf openrouteservice.org (Sign up -> Dashboard -> API Key)
@@ -978,19 +978,56 @@ Feli</textarea>
     lb.addEventListener('click',function(e){if(e.target===lb)closeLb();});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLb();});
 
-    // Force a true download, even for cross-origin cloud URLs
-    function download(p){
+    // Kann das Gerät Bilddateien nativ teilen? (Handy -> "In Fotos sichern")
+    var canShareFiles=false;
+    try{ canShareFiles=!!(navigator.canShare&&navigator.canShare({files:[new File([new Blob([''],{type:'image/jpeg'})],'t.jpg',{type:'image/jpeg'})]})); }catch(e){ canShareFiles=false; }
+
+    function safeName(p){ return (p.name||'team-tag-foto.jpg').replace(/[^a-zA-Z0-9._-]/g,'_'); }
+    function plainDownload(blob,name){
+      var u=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(function(){URL.revokeObjectURL(u);},4000);
+    }
+    // Handy: System-Teilen (mit "In Fotos sichern"). PC: normaler Download.
+    function saveImage(p){
       fetch(p.url).then(function(r){return r.blob();}).then(function(b){
-        var u=URL.createObjectURL(b),a=document.createElement('a');
-        a.href=u;a.download=p.name||'foto.jpg';document.body.appendChild(a);a.click();a.remove();
-        setTimeout(function(){URL.revokeObjectURL(u);},4000);
+        var name=safeName(p);
+        if(canShareFiles){
+          var file=new File([b],name,{type:b.type||'image/jpeg'});
+          if(navigator.canShare&&navigator.canShare({files:[file]})){
+            navigator.share({files:[file],title:'Team-Tag Foto'}).catch(function(err){
+              if(err&&err.name==='AbortError')return; // Nutzer hat abgebrochen
+              plainDownload(b,name);
+            });
+            return;
+          }
+        }
+        plainDownload(b,name);
       }).catch(function(){window.open(p.url,'_blank');});
     }
-    lbDl.addEventListener('click',function(e){e.preventDefault();if(cur>=0)download(photos[cur]);});
+    function downloadAllPlain(){
+      photos.forEach(function(p,i){setTimeout(function(){
+        fetch(p.url).then(function(r){return r.blob();}).then(function(b){plainDownload(b,safeName(p));}).catch(function(){window.open(p.url,'_blank');});
+      },i*500);});
+    }
+
+    // Button-Beschriftungen an das Gerät anpassen
+    if(canShareFiles){ if(lbDl)lbDl.textContent='📲 In Fotos speichern'; if(dlAll)dlAll.textContent='📲 Alle speichern'; }
+
+    lbDl.addEventListener('click',function(e){e.preventDefault();if(cur>=0)saveImage(photos[cur]);});
     lbDel.addEventListener('click',function(){if(cur<0)return;removePhoto(photos[cur]).then(function(){closeLb();load();});});
     dlAll.addEventListener('click',function(){
       if(!photos.length){alert('Noch keine Fotos vorhanden.');return;}
-      photos.forEach(function(p,i){setTimeout(function(){download(p);},i*500);});
+      if(canShareFiles){
+        Promise.all(photos.map(function(p){return fetch(p.url).then(function(r){return r.blob();}).then(function(b){return new File([b],safeName(p),{type:b.type||'image/jpeg'});});}))
+          .then(function(files){
+            if(navigator.canShare&&navigator.canShare({files:files})){ return navigator.share({files:files,title:'Team-Tag Fotos'}); }
+            downloadAllPlain();
+          })
+          .catch(function(err){ if(err&&err.name==='AbortError')return; downloadAllPlain(); });
+        return;
+      }
+      downloadAllPlain();
     });
 
     // Downscale to JPEG; blob for cloud, dataURL for local
