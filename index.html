@@ -147,6 +147,10 @@
   /* MAP */
   .mapsec-sub{color:var(--muted);margin:2px 0 16px;}
   #map{height:380px;width:100%;border-radius:var(--radius);border:1.5px solid var(--line);box-shadow:var(--shadow);z-index:0;}
+  #map.map-full{position:fixed;inset:0;width:100vw!important;height:100vh!important;height:100dvh!important;z-index:1000;border-radius:0;border:none;margin:0;}
+  body.map-full-active{overflow:hidden;}
+  .map-fs-exit{display:none;position:fixed;top:12px;right:12px;z-index:1001;width:44px;height:44px;border-radius:50%;border:none;background:rgba(26,27,58,.92);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer;box-shadow:0 6px 18px -4px rgba(0,0,0,.5);}
+  .map-fs-exit:active{transform:scale(.94);}
   .leaflet-container{font-family:"Nunito",sans-serif;background:var(--surface);}
   .leaflet-tile{transition:filter .4s ease;}
   :root[data-theme="dark"] .leaflet-tile{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9);}
@@ -505,9 +509,11 @@ Feli</textarea>
         <button class="btn btn-primary" id="locBtn">📍 Mein Standort</button>
         <button class="btn btn-ghost" id="centerBtn">🎯 Zentrieren</button>
         <button class="btn btn-ghost" id="routeBtn" style="display:none">🚇 Öffi-Route</button>
+        <button class="btn btn-ghost" id="fsBtn">⛶ Vollbild</button>
       </div>
       <div id="locInfo" class="loc-info"></div>
       <div id="map"></div>
+      <button id="fsExit" class="map-fs-exit" aria-label="Vollbild schließen" style="display:none">✕</button>
     </section>
 
     <section id="fotos" class="reveal">
@@ -890,6 +896,21 @@ Feli</textarea>
     if('IntersectionObserver' in window){var mo=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){map.invalidateSize();}});});mo.observe(mapEl);}
     setTimeout(function(){map.invalidateSize();},500);
     window.addEventListener('resize',function(){map.invalidateSize();});
+
+    // Karte im Vollbild anzeigen (CSS-basiert, funktioniert auch auf iPhone)
+    (function(){
+      var fsBtn=document.getElementById('fsBtn'),fsExit=document.getElementById('fsExit');
+      function setFull(on){
+        mapEl.classList.toggle('map-full',on);
+        document.body.classList.toggle('map-full-active',on);
+        if(fsExit)fsExit.style.display=on?'':'none';
+        if(fsBtn)fsBtn.textContent=on?'⛶ Schließen':'⛶ Vollbild';
+        setTimeout(function(){map.invalidateSize();},80);
+      }
+      if(fsBtn)fsBtn.addEventListener('click',function(){setFull(!mapEl.classList.contains('map-full'));});
+      if(fsExit)fsExit.addEventListener('click',function(){setFull(false);});
+      document.addEventListener('keydown',function(e){if(e.key==='Escape'&&mapEl.classList.contains('map-full'))setFull(false);});
+    })();
   })();
 
   // Team draw
