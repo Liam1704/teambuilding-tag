@@ -147,7 +147,8 @@
   .route-traveler{width:14px;height:14px;border-radius:50%;background:var(--c-laser);border:3px solid #fff;box-shadow:0 0 0 4px rgba(255,61,113,.30),0 2px 6px rgba(0,0,0,.35);}
   .route-traveler.me{animation:mePulse 1.6s ease-in-out infinite;}
   @keyframes mePulse{0%,100%{box-shadow:0 0 0 0 rgba(255,61,113,.45),0 2px 6px rgba(0,0,0,.35);}50%{box-shadow:0 0 0 11px rgba(255,61,113,0),0 2px 6px rgba(0,0,0,.35);}}
-  #locBtn{margin:0 0 12px;}
+  .loc-tools{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:10px;}
+  .loc-info{font-family:"JetBrains Mono",monospace;font-size:.82rem;font-weight:700;color:var(--muted);margin:0 2px 12px;min-height:1.15em;}
   @media (prefers-reduced-motion:reduce){.route-traveler.me{animation:none !important;}}
   .pop{font-size:.92rem;line-height:1.5;}
   .pop strong{font-size:1rem;}
@@ -483,7 +484,11 @@ Feli</textarea>
     <section id="karte" class="reveal">
       <div class="sec-head"><h2>Alle Orte auf einen Blick</h2><span class="count">// interaktiv</span></div>
       <p class="mapsec-sub">Tippe auf einen Pin für Details und die Route mit den Öffis.</p>
-      <button class="btn btn-primary" id="locBtn">📍 Mein Standort auf der Karte</button>
+      <div class="loc-tools">
+        <button class="btn btn-primary" id="locBtn">📍 Mein Standort</button>
+        <button class="btn btn-ghost" id="centerBtn">🎯 Zentrieren</button>
+      </div>
+      <div id="locInfo" class="loc-info"></div>
       <div id="map"></div>
     </section>
 
@@ -738,7 +743,7 @@ Feli</textarea>
     });
     map.fitBounds(bounds,{padding:[40,40]});
 
-    // Route-Linie zeichnen + Live-Standort der Person
+    // Route-Linie zeichnen + Live-Standort + Entfernung zur nächsten Station
     (function(){
       var routeCoords=stops.map(function(s){return [s.lat,s.lng];});
       var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -763,34 +768,60 @@ Feli</textarea>
       } else { setTimeout(drawLine,600); }
       route.on('click',function(){drawLine();});
 
-      // ----- Live-Standort: der bewegliche Punkt = Position der Person (GPS) -----
-      var meMarker=null,meCircle=null,watchId=null,centeredOnce=false;
+      // ----- Live-Standort + Entfernung/Zeit zur nächsten Station -----
+      var meMarker=null,meCircle=null,watchId=null,meLL=null,centeredOnce=false,wantCenter=false;
       var meIcon=L.divIcon({className:'route-traveler-wrap',html:'<div class="route-traveler me"></div>',iconSize:[14,14],iconAnchor:[7,7]});
-      var btn=document.getElementById('locBtn');
+      var btn=document.getElementById('locBtn'),centerBtn=document.getElementById('centerBtn'),info=document.getElementById('locInfo');
+
+      // Zeitplan aus der Timeline lesen (index-gleich zur stops-Liste)
+      var sched=[].map.call(document.querySelectorAll('#ablauf .timeline .stop'),function(el){
+        return {name:el.getAttribute('data-name'),start:new Date(el.getAttribute('data-start')).getTime(),end:new Date(el.getAttribute('data-end')).getTime()};
+      });
+      function nextIdx(){
+        var now=Date.now(),k;
+        for(k=0;k<sched.length;k++){ if(sched[k].start>now) return k; }
+        if(sched.length&&now<sched[sched.length-1].end) return sched.length-1;
+        return -1;
+      }
+      function fmtDist(m){ return m>=1000 ? (m/1000).toFixed(1).replace('.',',')+' km' : (Math.round(m/10)*10)+' m'; }
+      function updateInfo(){
+        if(!info) return;
+        var idx=nextIdx();
+        if(idx<0){ info.textContent='🎉 Tag geschafft – keine Station mehr offen.'; return; }
+        var label=(sched[idx]&&sched[idx].name)?sched[idx].name:stops[idx].name;
+        if(!meLL){ info.textContent='Standort aktivieren, um Entfernung & Zeit bis „'+label+'" zu sehen.'; return; }
+        var m=map.distance(meLL,[stops[idx].lat,stops[idx].lng]);
+        var mins=Math.max(1,Math.round(m/80));
+        info.textContent='📍 noch ~'+fmtDist(m)+' bis '+label+' · ~'+mins+' Min zu Fuß (Luftlinie)';
+      }
+
       function onPos(pos){
-        var ll=[pos.coords.latitude,pos.coords.longitude],acc=pos.coords.accuracy||0;
+        meLL=[pos.coords.latitude,pos.coords.longitude];var acc=pos.coords.accuracy||0;
         if(!meMarker){
-          meCircle=L.circle(ll,{radius:acc,color:'#FF3D71',weight:1,fillColor:'#FF3D71',fillOpacity:.12}).addTo(map);
-          meMarker=L.marker(ll,{icon:meIcon,interactive:false,zIndexOffset:1200}).addTo(map);
-        } else {
-          meMarker.setLatLng(ll);meCircle.setLatLng(ll).setRadius(acc);
-        }
-        if(!centeredOnce){centeredOnce=true;map.fitBounds(bounds.concat([ll]),{padding:[40,40],maxZoom:15});}
-        if(btn){btn.textContent='\uD83D\uDCCD Standort aktiv \u2013 folgt dir';btn.disabled=false;}
+          meCircle=L.circle(meLL,{radius:acc,color:'#FF3D71',weight:1,fillColor:'#FF3D71',fillOpacity:.12}).addTo(map);
+          meMarker=L.marker(meLL,{icon:meIcon,interactive:false,zIndexOffset:1200}).addTo(map);
+        } else { meMarker.setLatLng(meLL);meCircle.setLatLng(meLL).setRadius(acc); }
+        if(wantCenter){ wantCenter=false; map.flyTo(meLL,16); }
+        else if(!centeredOnce){ centeredOnce=true; map.fitBounds(bounds.concat([meLL]),{padding:[40,40],maxZoom:15}); }
+        if(btn){btn.textContent='📍 Standort aktiv';btn.disabled=false;}
+        updateInfo();
       }
       function onErr(err){
-        if(btn){btn.disabled=false;btn.textContent='\uD83D\uDCCD Mein Standort auf der Karte';}
+        if(btn){btn.disabled=false;btn.textContent='📍 Mein Standort';}
         alert(err&&err.code===1
-          ? 'Standort-Freigabe wurde abgelehnt. Bitte im Browser die Ortung f\u00fcr diese Seite erlauben und erneut tippen.'
+          ? 'Standort-Freigabe wurde abgelehnt. Bitte im Browser die Ortung für diese Seite erlauben und erneut tippen.'
           : 'Standort konnte nicht ermittelt werden. Bitte Ortung/GPS aktivieren und erneut tippen.');
       }
       function startLoc(){
-        if(!('geolocation' in navigator)){alert('Dein Browser unterst\u00fctzt keine Standortbestimmung.');return;}
-        if(btn){btn.disabled=true;btn.textContent='\uD83D\uDCCD Suche Standort \u2026';}
+        if(!('geolocation' in navigator)){alert('Dein Browser unterstützt keine Standortbestimmung.');return;}
+        if(btn){btn.disabled=true;btn.textContent='📍 Suche Standort …';}
         if(watchId!==null)navigator.geolocation.clearWatch(watchId);
         watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:10000,timeout:15000});
       }
       if(btn)btn.addEventListener('click',startLoc);
+      if(centerBtn)centerBtn.addEventListener('click',function(){ if(meLL){ map.flyTo(meLL,16); } else { wantCenter=true; startLoc(); } });
+      updateInfo();
+      setInterval(updateInfo,30000);
     })();
 
     var mapEl=document.getElementById('map');
