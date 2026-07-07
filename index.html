@@ -266,6 +266,12 @@
   .gal-item{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;border:1.5px solid var(--line);cursor:pointer;background:var(--line);animation:popIn .35s ease both;}
   .gal-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease;}
   .gal-item:hover img{transform:scale(1.07);}
+  .vote-btn{position:absolute;left:6px;bottom:6px;display:inline-flex;align-items:center;gap:4px;border:none;cursor:pointer;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;padding:4px 9px;font-family:"Nunito",sans-serif;font-weight:800;font-size:.8rem;line-height:1;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);}
+  .vote-btn .vh{font-size:.95rem;}
+  .vote-btn.voted{background:rgba(255,61,113,.92);}
+  .vote-btn:active{transform:scale(.92);}
+  .gal-crown{position:absolute;top:6px;left:6px;right:6px;text-align:center;background:linear-gradient(90deg,var(--c-breakfast),var(--c-laser));color:#fff;font-family:"Fredoka",sans-serif;font-weight:600;font-size:.72rem;padding:3px 6px;border-radius:999px;box-shadow:0 4px 10px -3px rgba(0,0,0,.4);}
+  .vote-lead{font-family:"JetBrains Mono",monospace;font-size:.82rem;font-weight:700;color:var(--muted);margin:2px 2px 10px;}
   .gal-empty{color:var(--muted);text-align:center;padding:22px 0;font-weight:700;}
   .gal-empty.hide{display:none;}
   .cloud-status{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:700;padding:5px 11px;border-radius:999px;margin:0 0 6px;border:1.5px solid var(--line);}
@@ -518,6 +524,7 @@ Feli</textarea>
           <button class="btn btn-ghost" id="refreshBtn">🔄 Aktualisieren</button>
         </div>
       </div>
+      <div id="voteLead" class="vote-lead" style="display:none"></div>
       <div class="gal-grid" id="galGrid"></div>
       <p class="gal-empty" id="galEmpty">Noch keine Fotos – macht das erste Bild vom Team-Tag! 📸</p>
     </section>
@@ -971,13 +978,66 @@ Feli</textarea>
 
     var LKEY='tbt_photos_v1',photos=[],cur=-1; // photos: [{name,url}]
 
+    // ---- "Foto des Tages": eine Stimme pro Person, live über die Cloud ----
+    var voterId='';
+    try{ voterId=localStorage.getItem('tbt_voter')||''; if(!voterId){ voterId=(Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-z0-9]/g,''); localStorage.setItem('tbt_voter',voterId); } }catch(e){ voterId='v'+Math.floor(Math.random()*1e9); }
+    var votes={},myVote=null,leaderName=null;
+    function voteFile(name){ return 'votes/'+voterId+'__'+name; }
+    function loadVotes(){
+      if(!cloud) return Promise.resolve();
+      return cloud.storage.from(BUCKET).list('votes',{limit:2000}).then(function(res){
+        if(res.error) throw res.error;
+        var v={},mine=null;
+        (res.data||[]).forEach(function(o){
+          if(!o.name||!o.id) return;
+          var i=o.name.indexOf('__'); if(i<0) return;
+          var voter=o.name.slice(0,i),photo=o.name.slice(i+2);
+          v[photo]=(v[photo]||0)+1;
+          if(voter===voterId) mine=photo;
+        });
+        votes=v; myVote=mine;
+        leaderName=null; var best=0;
+        photos.forEach(function(pp){ var c=v[pp.name]||0; if(c>best){best=c;leaderName=pp.name;} });
+        render(); updateLead();
+      }).catch(function(){});
+    }
+    function toggleVote(p){
+      if(!cloud){ alert('Das Voting funktioniert nur mit eingerichteter Cloud.'); return; }
+      var was=myVote,ops=[];
+      if(was) ops.push(cloud.storage.from(BUCKET).remove([voteFile(was)]));
+      Promise.all(ops).then(function(){
+        if(was===p.name) return null; // gleiche noch mal -> Stimme zurückziehen
+        return cloud.storage.from(BUCKET).upload(voteFile(p.name),new Blob(['1'],{type:'text/plain'}),{upsert:true});
+      }).then(function(){ loadVotes(); }).catch(function(){ loadVotes(); });
+    }
+    function updateLead(){
+      var el=document.getElementById('voteLead'); if(!el) return;
+      if(!cloud){ el.style.display='none'; return; }
+      var total=0; Object.keys(votes).forEach(function(n){ total+=votes[n]; });
+      el.style.display='';
+      if(!leaderName||!total){ el.textContent='🏆 Foto des Tages: noch keine Stimmen – tippt auf ❤️ bei eurem Lieblingsfoto (eine Stimme pro Person).'; return; }
+      el.textContent='🏆 Foto des Tages: führt mit '+votes[leaderName]+' Stimme'+(votes[leaderName]===1?'':'n')+' · '+total+' Stimme'+(total===1?'':'n')+' insgesamt.';
+    }
+
     function render(){
       grid.innerHTML='';
       empty.classList.toggle('hide',photos.length>0);
       photos.forEach(function(p,idx){
         var d=document.createElement('div');d.className='gal-item';
         var im=document.createElement('img');im.src=p.url;im.alt=p.name||'Foto';im.loading='lazy';
-        d.appendChild(im);d.addEventListener('click',function(){openLb(idx);});
+        d.appendChild(im);
+        d.addEventListener('click',function(){openLb(idx);});
+        if(cloud){
+          if(leaderName&&p.name===leaderName&&(votes[leaderName]||0)>0){
+            var crown=document.createElement('div');crown.className='gal-crown';crown.textContent='🏆 Foto des Tages';d.appendChild(crown);
+          }
+          var vb=document.createElement('button');
+          vb.className='vote-btn'+(myVote===p.name?' voted':'');
+          vb.innerHTML='<span class="vh">'+(myVote===p.name?'❤️':'🤍')+'</span><span class="vc">'+(votes[p.name]||0)+'</span>';
+          vb.title=(myVote===p.name?'Stimme zurückziehen':'Für dieses Foto stimmen');
+          vb.addEventListener('click',function(e){e.stopPropagation();toggleVote(p);});
+          d.appendChild(vb);
+        }
         grid.appendChild(d);
       });
     }
@@ -1065,10 +1125,10 @@ Feli</textarea>
     function cloudList(){
       return cloud.storage.from(BUCKET).list('',{limit:300,sortBy:{column:'created_at',order:'asc'}}).then(function(res){
         if(res.error)throw res.error;
-        photos=(res.data||[]).filter(function(o){return o.name&&o.name!=='.emptyFolderPlaceholder';}).map(function(o){
+        photos=(res.data||[]).filter(function(o){return o.name&&o.name!=='.emptyFolderPlaceholder'&&o.id;}).map(function(o){
           return {name:o.name,url:cloud.storage.from(BUCKET).getPublicUrl(o.name).data.publicUrl};
         });
-        render();
+        render(); loadVotes();
       });
     }
 
