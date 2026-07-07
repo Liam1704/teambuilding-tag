@@ -936,7 +936,7 @@ Anja</textarea>
     function team(n,c,m){var l=m.map(function(x,i){return '<li style="animation-delay:'+(i*0.06)+'s">'+esc(x)+'</li>';}).join('');return '<div class="team" style="--tc:'+c+'"><h3>'+n+'</h3><ol>'+l+'</ol></div>';}
     function draw(){
       var names=parse(input.value);
-      if(names.length<2){result.innerHTML='<p class="draw-empty">Bitte mindestens 2 Namen eingeben. 🙂</p>';return;}
+      if(names.length<2){result.innerHTML='<p class="draw-empty">Bitte alle Namen eingeben. 🙂</p>';return;}
       shuffle(names);var h=Math.ceil(names.length/2);
       result.innerHTML='<div class="teams">'+team('🔴 Team Rot','#FF3D71',names.slice(0,h))+team('🔵 Team Blau','#4C5DF7',names.slice(h))+'</div>';
       btn.classList.remove('spin');void btn.offsetWidth;btn.classList.add('spin');
@@ -952,7 +952,7 @@ Anja</textarea>
     });
   })();
 
-  // ---------- Rickroll easter egg: click the title 5× ----------
+  // ---------- Rickroll easter egg: click the title 1× ----------
   (function(){
     var t=document.getElementById('rickTitle'),rr=document.getElementById('rr'),fr=document.getElementById('rrFrame'),cl=document.getElementById('rrClose');
     if(!t||!rr) return;
@@ -969,7 +969,7 @@ Anja</textarea>
       }catch(e){}},1100);
     }
     function close(){rr.classList.remove('open');fr.src='';}
-    function hit(){n++;clearTimeout(timer);timer=setTimeout(function(){n=0;},1200);if(n>=3){n=0;open();}}
+    function hit(){n++;clearTimeout(timer);timer=setTimeout(function(){n=0;},1200);if(n>=1){n=0;open();}}
     t.addEventListener('click',hit);
     t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();hit();}});
     cl.addEventListener('click',close);
