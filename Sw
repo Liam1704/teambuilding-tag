@@ -1,0 +1,63 @@
+/* Team-Tag PWA Service Worker */
+var CACHE = 'tbt-v1';
+var PRECACHE = ['./', './index.html'];
+
+/* Statische Assets, die offline nützlich sind (Schriften, Karten-/Cloud-Bibliotheken) */
+var STATIC_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];
+
+function isStatic(url) {
+  if (url.origin === self.location.origin) {
+    return /\.(png|jpg|jpeg|svg|webp|ico|css|js|webmanifest)$/i.test(url.pathname);
+  }
+  return STATIC_HOSTS.indexOf(url.hostname) >= 0;
+}
+
+self.addEventListener('install', function (e) {
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(PRECACHE); }).catch(function () {}));
+});
+
+self.addEventListener('activate', function (e) {
+  e.waitUntil(
+    caches.keys().then(function (keys) {
+      return Promise.all(keys.map(function (k) { if (k !== CACHE) return caches.delete(k); }));
+    }).then(function () { return self.clients.claim(); })
+  );
+});
+
+self.addEventListener('fetch', function (e) {
+  var req = e.request;
+  if (req.method !== 'GET') return;
+  var url = new URL(req.url);
+
+  /* Seite selbst: erst Netz (immer aktuell), sonst aus dem Cache (offline) */
+  if (req.mode === 'navigate' || (req.headers.get('accept') || '').indexOf('text/html') >= 0) {
+    e.respondWith(
+      fetch(req).then(function (res) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put('./index.html', copy); }).catch(function () {});
+        return res;
+      }).catch(function () {
+        return caches.match('./index.html').then(function (r) { return r || caches.match('./'); });
+      })
+    );
+    return;
+  }
+
+  /* Statische Assets: erst Cache (schnell/offline), sonst Netz und cachen */
+  if (isStatic(url)) {
+    e.respondWith(
+      caches.match(req).then(function (cached) {
+        return cached || fetch(req).then(function (res) {
+          try { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () {}); } catch (_) {}
+          return res;
+        });
+      })
+    );
+    return;
+  }
+
+  /* Alles andere (Supabase-Fotos, Wetter, Karten-Kacheln, Routing): immer live,
+     nur zur Not aus dem Cache – so bleiben Fotos & Daten aktuell. */
+  e.respondWith(fetch(req).catch(function () { return caches.match(req); }));
+});
