@@ -982,6 +982,8 @@ Feli</textarea>
     var voterId='';
     try{ voterId=localStorage.getItem('tbt_voter')||''; if(!voterId){ voterId=(Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-z0-9]/g,''); localStorage.setItem('tbt_voter',voterId); } }catch(e){ voterId='v'+Math.floor(Math.random()*1e9); }
     var votes={},myVote=null,leaderName=null;
+    var VOTE_OPEN=new Date('2026-09-17T18:00:00+02:00').getTime(); // Voting oeffnet am Abend
+    function voteOpen(){ try{ if(new URLSearchParams(location.search).get('vote')==='open') return true; }catch(e){} return Date.now()>=VOTE_OPEN; }
     function voteFile(name){ return 'votes/'+voterId+'__'+name; }
     function loadVotes(){
       if(!cloud) return Promise.resolve();
@@ -1003,6 +1005,7 @@ Feli</textarea>
     }
     function toggleVote(p){
       if(!cloud){ alert('Das Voting funktioniert nur mit eingerichteter Cloud.'); return; }
+      if(!voteOpen()){ alert('Das Voting fürs „Foto des Tages" öffnet am Abend (ab 18:00 Uhr).'); return; }
       var was=myVote,ops=[];
       if(was) ops.push(cloud.storage.from(BUCKET).remove([voteFile(was)]));
       Promise.all(ops).then(function(){
@@ -1013,9 +1016,10 @@ Feli</textarea>
     function updateLead(){
       var el=document.getElementById('voteLead'); if(!el) return;
       if(!cloud){ el.style.display='none'; return; }
-      var total=0; Object.keys(votes).forEach(function(n){ total+=votes[n]; });
       el.style.display='';
-      if(!leaderName||!total){ el.textContent='🏆 Foto des Tages: noch keine Stimmen – tippt auf ❤️ bei eurem Lieblingsfoto (eine Stimme pro Person).'; return; }
+      if(!voteOpen()){ el.textContent='❤️ Das Voting fürs „Foto des Tages" öffnet am Abend (ab 18:00 Uhr) – untertags werden ja noch fleißig Fotos gemacht.'; return; }
+      var total=0; Object.keys(votes).forEach(function(n){ total+=votes[n]; });
+      if(!leaderName||!total){ el.textContent='🏆 Foto des Tages: Voting ist offen – tippt auf ❤️ bei eurem Lieblingsfoto (eine Stimme pro Person).'; return; }
       el.textContent='🏆 Foto des Tages: führt mit '+votes[leaderName]+' Stimme'+(votes[leaderName]===1?'':'n')+' · '+total+' Stimme'+(total===1?'':'n')+' insgesamt.';
     }
 
@@ -1027,7 +1031,7 @@ Feli</textarea>
         var im=document.createElement('img');im.src=p.url;im.alt=p.name||'Foto';im.loading='lazy';
         d.appendChild(im);
         d.addEventListener('click',function(){openLb(idx);});
-        if(cloud){
+        if(cloud&&voteOpen()){
           if(leaderName&&p.name===leaderName&&(votes[leaderName]||0)>0){
             var crown=document.createElement('div');crown.className='gal-crown';crown.textContent='🏆 Foto des Tages';d.appendChild(crown);
           }
