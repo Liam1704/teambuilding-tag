@@ -487,6 +487,7 @@ Feli</textarea>
       <div class="loc-tools">
         <button class="btn btn-primary" id="locBtn">📍 Mein Standort</button>
         <button class="btn btn-ghost" id="centerBtn">🎯 Zentrieren</button>
+        <button class="btn btn-ghost" id="routeBtn" style="display:none">🚇 Öffi-Route</button>
       </div>
       <div id="locInfo" class="loc-info"></div>
       <div id="map"></div>
@@ -578,6 +579,10 @@ Feli</textarea>
     anonKey: '',   // dein "anon public" API-Key
     bucket: 'fotos'
   };
+  /* OPTIONAL: echte Fussweg-Zeit inline statt Luftlinie.
+     Kostenlosen Key holen auf openrouteservice.org (Sign up -> Dashboard -> API Key)
+     und hier eintragen. Leer lassen = Luftlinien-Schaetzung. */
+  window.TBT_ROUTING = { orsKey: '' };
 </script>
 <script>
   document.documentElement.classList.add('js');
@@ -743,7 +748,7 @@ Feli</textarea>
     });
     map.fitBounds(bounds,{padding:[40,40]});
 
-    // Route-Linie zeichnen + Live-Standort + Entfernung zur nächsten Station
+    // Route-Linie zeichnen + Live-Standort + Entfernung/Zeit zur nächsten Station
     (function(){
       var routeCoords=stops.map(function(s){return [s.lat,s.lng];});
       var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -771,7 +776,9 @@ Feli</textarea>
       // ----- Live-Standort + Entfernung/Zeit zur nächsten Station -----
       var meMarker=null,meCircle=null,watchId=null,meLL=null,centeredOnce=false,wantCenter=false;
       var meIcon=L.divIcon({className:'route-traveler-wrap',html:'<div class="route-traveler me"></div>',iconSize:[14,14],iconAnchor:[7,7]});
-      var btn=document.getElementById('locBtn'),centerBtn=document.getElementById('centerBtn'),info=document.getElementById('locInfo');
+      var btn=document.getElementById('locBtn'),centerBtn=document.getElementById('centerBtn'),routeBtn=document.getElementById('routeBtn'),info=document.getElementById('locInfo');
+      var ORS=(window.TBT_ROUTING&&window.TBT_ROUTING.orsKey)||'';
+      var lastWalkKey='';
 
       // Zeitplan aus der Timeline lesen (index-gleich zur stops-Liste)
       var sched=[].map.call(document.querySelectorAll('#ablauf .timeline .stop'),function(el){
@@ -783,16 +790,43 @@ Feli</textarea>
         if(sched.length&&now<sched[sched.length-1].end) return sched.length-1;
         return -1;
       }
+      function labelOf(idx){ return (sched[idx]&&sched[idx].name)?sched[idx].name:stops[idx].name; }
       function fmtDist(m){ return m>=1000 ? (m/1000).toFixed(1).replace('.',',')+' km' : (Math.round(m/10)*10)+' m'; }
+
+      // Echte Fussweg-Zeit via OpenRouteService (nur wenn Key gesetzt)
+      function fetchWalk(idx){
+        if(!ORS||!meLL) return;
+        var key=idx+':'+meLL[0].toFixed(3)+','+meLL[1].toFixed(3);
+        if(key===lastWalkKey) return; lastWalkKey=key;
+        var url='https://api.openrouteservice.org/v2/directions/foot-walking?api_key='+ORS
+              +'&start='+meLL[1]+','+meLL[0]+'&end='+stops[idx].lng+','+stops[idx].lat;
+        fetch(url).then(function(r){return r.json();}).then(function(d){
+          var sum=d&&d.features&&d.features[0]&&d.features[0].properties&&d.features[0].properties.summary;
+          if(!sum||sum.duration==null) return;
+          if(nextIdx()!==idx) return; // Ziel hat sich inzwischen geändert
+          var mins=Math.max(1,Math.round(sum.duration/60));
+          info.textContent='🚶 ~'+mins+' Min zu Fuß · '+fmtDist(sum.distance)+' bis '+labelOf(idx)+' (echter Fußweg)';
+        }).catch(function(){});
+      }
+
       function updateInfo(){
         if(!info) return;
         var idx=nextIdx();
+        if(routeBtn) routeBtn.style.display=(meLL&&idx>=0)?'':'none';
         if(idx<0){ info.textContent='🎉 Tag geschafft – keine Station mehr offen.'; return; }
-        var label=(sched[idx]&&sched[idx].name)?sched[idx].name:stops[idx].name;
+        var label=labelOf(idx);
         if(!meLL){ info.textContent='Standort aktivieren, um Entfernung & Zeit bis „'+label+'" zu sehen.'; return; }
         var m=map.distance(meLL,[stops[idx].lat,stops[idx].lng]);
         var mins=Math.max(1,Math.round(m/80));
-        info.textContent='📍 noch ~'+fmtDist(m)+' bis '+label+' · ~'+mins+' Min zu Fuß (Luftlinie)';
+        info.textContent='📍 noch ~'+fmtDist(m)+' bis '+label+' · ~'+mins+' Min zu Fuß'+(ORS?' …':' (Luftlinie)');
+        fetchWalk(idx); // ersetzt die Zeile bei Erfolg durch echte Fußweg-Zeit
+      }
+
+      function openTransit(){
+        var idx=nextIdx();
+        if(idx<0||!meLL) return;
+        window.open('https://www.google.com/maps/dir/?api=1&origin='+meLL[0]+','+meLL[1]
+          +'&destination='+stops[idx].q+'&travelmode=transit','_blank','noopener');
       }
 
       function onPos(pos){
@@ -820,6 +854,7 @@ Feli</textarea>
       }
       if(btn)btn.addEventListener('click',startLoc);
       if(centerBtn)centerBtn.addEventListener('click',function(){ if(meLL){ map.flyTo(meLL,16); } else { wantCenter=true; startLoc(); } });
+      if(routeBtn)routeBtn.addEventListener('click',openTransit);
       updateInfo();
       setInterval(updateInfo,30000);
     })();
