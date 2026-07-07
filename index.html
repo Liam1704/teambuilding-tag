@@ -272,6 +272,8 @@
   .vote-btn:active{transform:scale(.92);}
   .gal-crown{position:absolute;top:6px;left:6px;right:6px;text-align:center;background:linear-gradient(90deg,var(--c-breakfast),var(--c-laser));color:#fff;font-family:"Fredoka",sans-serif;font-weight:600;font-size:.72rem;padding:3px 6px;border-radius:999px;box-shadow:0 4px 10px -3px rgba(0,0,0,.4);}
   .vote-lead{font-family:"JetBrains Mono",monospace;font-size:.82rem;font-weight:700;color:var(--muted);margin:2px 2px 10px;}
+  .tbt-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);z-index:320;background:#1A1B3A;color:#fff;padding:12px 18px;border-radius:14px;font-family:"Nunito",sans-serif;font-weight:800;font-size:.92rem;box-shadow:0 12px 30px -8px rgba(0,0,0,.5);opacity:0;transition:opacity .3s ease,transform .3s ease;max-width:90vw;text-align:center;pointer-events:none;}
+  .tbt-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .gal-empty{color:var(--muted);text-align:center;padding:22px 0;font-weight:700;}
   .gal-empty.hide{display:none;}
   .cloud-status{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:700;padding:5px 11px;border-radius:999px;margin:0 0 6px;border:1.5px solid var(--line);}
@@ -791,6 +793,7 @@ Feli</textarea>
 
       // ----- Live-Standort + Entfernung/Zeit zur nächsten Station -----
       var meMarker=null,meCircle=null,watchId=null,meLL=null,centeredOnce=false,wantCenter=false;
+      var arrived={};
       var meIcon=L.divIcon({className:'route-traveler-wrap',html:'<div class="route-traveler me"></div>',iconSize:[14,14],iconAnchor:[7,7]});
       var btn=document.getElementById('locBtn'),centerBtn=document.getElementById('centerBtn'),routeBtn=document.getElementById('routeBtn'),info=document.getElementById('locInfo');
       var ORS=(window.TBT_ROUTING&&window.TBT_ROUTING.orsKey)||'';
@@ -853,6 +856,14 @@ Feli</textarea>
         } else { meMarker.setLatLng(meLL);meCircle.setLatLng(meLL).setRadius(acc); }
         if(wantCenter){ wantCenter=false; map.flyTo(meLL,16); }
         else if(!centeredOnce){ centeredOnce=true; map.fitBounds(bounds.concat([meLL]),{padding:[40,40],maxZoom:15}); }
+        for(var ai=0;ai<stops.length;ai++){
+          if(arrived[ai]) continue;
+          if(map.distance(meLL,[stops[ai].lat,stops[ai].lng])<=70){
+            arrived[ai]=true;
+            var nm=(sched[ai]&&sched[ai].name)?sched[ai].name:stops[ai].name;
+            if(window.tbtToast) window.tbtToast('✓ Du bist bei „'+nm+'" angekommen!');
+          }
+        }
         if(btn){btn.textContent='📍 Standort aktiv';btn.disabled=false;}
         updateInfo();
       }
@@ -982,9 +993,16 @@ Feli</textarea>
     var voterId='';
     try{ voterId=localStorage.getItem('tbt_voter')||''; if(!voterId){ voterId=(Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-z0-9]/g,''); localStorage.setItem('tbt_voter',voterId); } }catch(e){ voterId='v'+Math.floor(Math.random()*1e9); }
     var votes={},myVote=null,leaderName=null;
+    var prevLeader=null,votesLoadedOnce=false;
     var VOTE_OPEN=new Date('2026-09-17T18:00:00+02:00').getTime(); // Voting oeffnet am Abend
     function voteOpen(){ try{ if(new URLSearchParams(location.search).get('vote')==='open') return true; }catch(e){} return Date.now()>=VOTE_OPEN; }
     function voteFile(name){ return 'votes/'+voterId+'__'+name; }
+    function showToast(msg){
+      var t=document.createElement('div'); t.className='tbt-toast'; t.textContent=msg; document.body.appendChild(t);
+      requestAnimationFrame(function(){ t.classList.add('show'); });
+      setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); },400); },3500);
+    }
+    window.tbtToast=showToast;
     function loadVotes(){
       if(!cloud) return Promise.resolve();
       return cloud.storage.from(BUCKET).list('votes',{limit:2000}).then(function(res){
@@ -1000,7 +1018,10 @@ Feli</textarea>
         votes=v; myVote=mine;
         leaderName=null; var best=0;
         photos.forEach(function(pp){ var c=v[pp.name]||0; if(c>best){best=c;leaderName=pp.name;} });
+        var changed = votesLoadedOnce && voteOpen() && leaderName && leaderName!==prevLeader;
+        votesLoadedOnce=true; prevLeader=leaderName;
         render(); updateLead();
+        if(changed){ if(window.tbtConfetti) window.tbtConfetti(); showToast('🎉 Neues Führungsfoto beim „Foto des Tages"!'); }
       }).catch(function(){});
     }
     function toggleVote(p){
@@ -1208,6 +1229,7 @@ Feli</textarea>
       var head=document.getElementById('galHead');if(head)head.textContent='Rückblick';
       var g=document.getElementById('fotos');if(g)g.scrollIntoView({behavior:'smooth'});
     }
+    window.tbtConfetti=function(){ if(!rm) burst(); };
     window.celebrate=function(){
       if(!rm)burst();
       thanks.classList.add('open');
