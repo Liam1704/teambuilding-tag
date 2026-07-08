@@ -218,6 +218,8 @@
   table.poll thead .corner{position:sticky;left:0;background:var(--surface);z-index:2;}
   .who small{display:block;font-weight:600;font-size:.68rem;color:var(--muted);font-family:"JetBrains Mono",monospace;margin-top:2px;}
   td.bestcol{background:color-mix(in srgb, var(--c-lunch) 10%, transparent);}
+  td.blockedcol{background:color-mix(in srgb, var(--c-laser) 8%, transparent);}
+  table.poll th.blocked{color:var(--muted);opacity:.7;text-decoration:line-through;}
   .cell{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;font-size:1.15rem;line-height:1;color:var(--line);user-select:none;}
   .cell.on{color:var(--c-lunch);}
   .cell.no{color:var(--c-laser);}
@@ -1382,31 +1384,50 @@ Christian</textarea>
     sel.addEventListener('change',function(){ meId=sel.value||null; try{localStorage.setItem('tbt_termin_me',meId||'');}catch(e){} render(); });
 
     function fmtTs(ts){ if(!ts) return '—'; try{ return new Date(ts).toLocaleString('de-AT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return '—'; } }
-    function counts(){ return DATES.map(function(d){ var n=0; PEOPLE.forEach(function(p){ if(state[p.id].votes[d.d]==='yes') n++; }); return n; }); }
+    function stats(){ return DATES.map(function(d){ var y=0,no=0; PEOPLE.forEach(function(p){ var v=state[p.id].votes[d.d]; if(v==='yes')y++; else if(v==='no')no++; }); return {yes:y,no:no}; }); }
 
     function render(){
-      var cnt=counts(),max=cnt.length?Math.max.apply(null,cnt):0;
+      var N=PEOPLE.length,S=stats();
+      var allYes=S.map(function(x){return N>0&&x.yes===N;});
+      var blocked=S.map(function(x){return x.no>0;});
       var h='<tr><th class="corner"></th>';
-      DATES.forEach(function(d,i){ var best=(max>0&&cnt[i]===max); h+='<th class="'+(best?'best':'')+'">'+d.lbl+'<span class="count-badge">'+cnt[i]+'/'+PEOPLE.length+'</span></th>'; });
+      DATES.forEach(function(d,i){
+        var cls=allYes[i]?'best':(blocked[i]?'blocked':'');
+        h+='<th class="'+cls+'">'+d.lbl+'<span class="count-badge">'+S[i].yes+'/'+N+(S[i].no?(' · '+S[i].no+'✗'):'')+'</span></th>';
+      });
       thead.innerHTML=h+'</tr>';
       var b='';
       PEOPLE.forEach(function(p){
         var isMe=(p.id===meId);
         b+='<tr class="'+(isMe?'me':'')+'"><td class="who">'+p.name+'<small>'+(state[p.id].ts?('abgestimmt '+fmtTs(state[p.id].ts)):'—')+'</small></td>';
         DATES.forEach(function(d,i){
-          var st=state[p.id].votes[d.d],best=(max>0&&cnt[i]===max);
-          var cls=st==='yes'?'on':(st==='no'?'no':'off'),sym=st==='yes'?'✓':(st==='no'?'✗':'·');
-          b+='<td class="'+(best?'bestcol':'')+'"><span class="cell '+cls+'" data-id="'+p.id+'" data-date="'+d.d+'">'+sym+'</span></td>';
+          var v=state[p.id].votes[d.d];
+          var cls=v==='yes'?'on':(v==='no'?'no':'off'),sym=v==='yes'?'✓':(v==='no'?'✗':'·');
+          var tdcls=allYes[i]?'bestcol':(blocked[i]?'blockedcol':'');
+          b+='<td class="'+tdcls+'"><span class="cell '+cls+'" data-id="'+p.id+'" data-date="'+d.d+'">'+sym+'</span></td>';
         });
         b+='</tr>';
       });
       tbody.innerHTML=b;
-      if(max<=0){ summary.innerHTML='Noch keine Stimmen – wähle oben deinen Namen und trag ein, wann du kannst.'; }
-      else {
-        var lbls=DATES.filter(function(d,i){return cnt[i]===max;}).map(function(d){return d.lbl;});
-        summary.innerHTML='Bester Termin bisher: <span class="hl">'+lbls.join(', ')+'</span> ('+max+' von '+PEOPLE.length+')';
+
+      var confirmed=DATES.filter(function(d,i){return allYes[i];}).map(function(d){return d.lbl;});
+      var anyVote=S.some(function(x){return x.yes>0||x.no>0;});
+      if(confirmed.length){
+        summary.innerHTML='✅ Passt für <span class="hl">alle</span>: <span class="hl">'+confirmed.join(', ')+'</span>';
+      } else if(!anyVote){
+        summary.innerHTML='Noch keine Stimmen – wähle oben deinen Namen und trag ein, wann du kannst.';
+      } else {
+        var viable=[]; S.forEach(function(x,i){ if(x.no===0) viable.push(i); });
+        if(!viable.length){
+          summary.innerHTML='😕 Kein Donnerstag, an dem <span class="hl">alle</span> können – überall hat mind. eine Person abgesagt.';
+        } else {
+          var maxYes=Math.max.apply(null,viable.map(function(i){return S[i].yes;}));
+          var near=viable.filter(function(i){return S[i].yes===maxYes;}).map(function(i){return DATES[i].lbl;});
+          var fehlen=N-maxYes;
+          summary.innerHTML='Noch kein Termin für alle. Am nächsten dran: <span class="hl">'+near.join(', ')+'</span> – es fehlen noch '+fehlen+' Zusage'+(fehlen===1?'':'n')+'.';
+        }
       }
-      note.textContent = meId ? 'Tippen schaltet um: 1× = ✓ kann · 2× = ✗ kann nicht · 3× = wieder leer.' : 'Wähle oben deinen Namen, um abzustimmen.';
+      note.textContent = meId ? 'Tippen schaltet um: 1× = ✓ kann · 2× = ✗ kann nicht · 3× = leer. Ein Termin gilt nur, wenn alle ✓ sind.' : 'Wähle oben deinen Namen, um abzustimmen.';
     }
 
     tbody.addEventListener('click',function(e){
