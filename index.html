@@ -220,10 +220,12 @@
   td.bestcol{background:color-mix(in srgb, var(--c-lunch) 10%, transparent);}
   .cell{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;font-size:1.15rem;line-height:1;color:var(--line);user-select:none;}
   .cell.on{color:var(--c-lunch);}
+  .cell.no{color:var(--c-laser);}
   tr.me{background:color-mix(in srgb, var(--primary) 9%, transparent);}
   tr.me .cell{cursor:pointer;border:1.5px dashed color-mix(in srgb, var(--primary) 40%, transparent);}
   tr.me .cell:hover{background:color-mix(in srgb, var(--primary) 18%, transparent);}
   tr.me .cell.on{border-style:solid;border-color:var(--c-lunch);}
+  tr.me .cell.no{border-style:solid;border-color:var(--c-laser);}
   .poll-summary{margin:16px 0 2px;font-weight:800;font-size:1.02rem;}
   .poll-summary .hl{color:var(--c-lunch);}
   .poll-note{color:var(--muted);font-size:.85rem;margin-top:6px;}
@@ -1365,7 +1367,7 @@ Christian</textarea>
     ];
     var CFG=window.TBT_CLOUD||{},BUCKET=CFG.bucket||'Fotos',sb=null;
     try{ sb=window.supabase&&window.supabase.createClient(CFG.url,CFG.anonKey); }catch(e){}
-    var state={}; PEOPLE.forEach(function(p){state[p.id]={dates:[],ts:null};});
+    var state={}; PEOPLE.forEach(function(p){state[p.id]={votes:{},ts:null};});
     var meId=null; try{ meId=localStorage.getItem('tbt_termin_me')||null; }catch(e){}
 
     var sel=document.getElementById('terminMe');
@@ -1380,7 +1382,7 @@ Christian</textarea>
     sel.addEventListener('change',function(){ meId=sel.value||null; try{localStorage.setItem('tbt_termin_me',meId||'');}catch(e){} render(); });
 
     function fmtTs(ts){ if(!ts) return '—'; try{ return new Date(ts).toLocaleString('de-AT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return '—'; } }
-    function counts(){ return DATES.map(function(d){ var n=0; PEOPLE.forEach(function(p){ if(state[p.id].dates.indexOf(d.d)>=0) n++; }); return n; }); }
+    function counts(){ return DATES.map(function(d){ var n=0; PEOPLE.forEach(function(p){ if(state[p.id].votes[d.d]==='yes') n++; }); return n; }); }
 
     function render(){
       var cnt=counts(),max=cnt.length?Math.max.apply(null,cnt):0;
@@ -1392,8 +1394,9 @@ Christian</textarea>
         var isMe=(p.id===meId);
         b+='<tr class="'+(isMe?'me':'')+'"><td class="who">'+p.name+'<small>'+(state[p.id].ts?('abgestimmt '+fmtTs(state[p.id].ts)):'—')+'</small></td>';
         DATES.forEach(function(d,i){
-          var on=state[p.id].dates.indexOf(d.d)>=0,best=(max>0&&cnt[i]===max);
-          b+='<td class="'+(best?'bestcol':'')+'"><span class="cell '+(on?'on':'off')+'" data-id="'+p.id+'" data-date="'+d.d+'">'+(on?'✓':'·')+'</span></td>';
+          var st=state[p.id].votes[d.d],best=(max>0&&cnt[i]===max);
+          var cls=st==='yes'?'on':(st==='no'?'no':'off'),sym=st==='yes'?'✓':(st==='no'?'✗':'·');
+          b+='<td class="'+(best?'bestcol':'')+'"><span class="cell '+cls+'" data-id="'+p.id+'" data-date="'+d.d+'">'+sym+'</span></td>';
         });
         b+='</tr>';
       });
@@ -1403,15 +1406,17 @@ Christian</textarea>
         var lbls=DATES.filter(function(d,i){return cnt[i]===max;}).map(function(d){return d.lbl;});
         summary.innerHTML='Bester Termin bisher: <span class="hl">'+lbls.join(', ')+'</span> ('+max+' von '+PEOPLE.length+')';
       }
-      note.textContent = meId ? 'Tipp: Tippe in deiner (blau markierten) Zeile auf die Donnerstage, an denen du kannst.' : 'Wähle oben deinen Namen, um abzustimmen.';
+      note.textContent = meId ? 'Tippen schaltet um: 1× = ✓ kann · 2× = ✗ kann nicht · 3× = wieder leer.' : 'Wähle oben deinen Namen, um abzustimmen.';
     }
 
     tbody.addEventListener('click',function(e){
       var c=e.target&&e.target.closest?e.target.closest('.cell'):null; if(!c) return;
       var id=c.getAttribute('data-id'),date=c.getAttribute('data-date');
       if(id!==meId){ if(window.tbtToast) window.tbtToast('Wähle zuerst oben deinen Namen 🙂'); return; }
-      var arr=state[id].dates,ix=arr.indexOf(date);
-      if(ix>=0) arr.splice(ix,1); else arr.push(date);
+      var cur=state[id].votes[date];
+      if(!cur) state[id].votes[date]='yes';
+      else if(cur==='yes') state[id].votes[date]='no';
+      else delete state[id].votes[date];
       state[id].ts=new Date().toISOString();
       render(); save(id);
     });
@@ -1419,7 +1424,7 @@ Christian</textarea>
     function save(id){
       if(!sb){ if(window.tbtToast) window.tbtToast('Keine Cloud-Verbindung – Stimme nicht gespeichert.'); return; }
       var person=PEOPLE.filter(function(p){return p.id===id;})[0];
-      var payload=JSON.stringify({name:person?person.name:id,dates:state[id].dates,ts:state[id].ts});
+      var payload=JSON.stringify({name:person?person.name:id,votes:state[id].votes,ts:state[id].ts});
       sb.storage.from(BUCKET).upload('termin/'+id+'.json',new Blob([payload],{type:'application/json'}),{upsert:true,contentType:'application/json'})
         .then(function(r){ if(r&&r.error) throw r.error; if(window.tbtToast) window.tbtToast('✓ Gespeichert'); })
         .catch(function(){ if(window.tbtToast) window.tbtToast('Speichern hat nicht geklappt – nochmal versuchen?'); });
@@ -1430,12 +1435,12 @@ Christian</textarea>
       sb.storage.from(BUCKET).list('termin',{limit:200}).then(function(res){
         if(res&&res.error) throw res.error;
         var files=((res&&res.data)||[]).filter(function(o){return o.name&&/\.json$/.test(o.name);});
-        PEOPLE.forEach(function(p){ state[p.id]={dates:[],ts:null}; });
+        PEOPLE.forEach(function(p){ state[p.id]={votes:{},ts:null}; });
         if(!files.length){ render(); return; }
         var pending=files.length;
         files.forEach(function(f){
           sb.storage.from(BUCKET).download('termin/'+f.name).then(function(dl){ return (dl&&dl.data)?dl.data.text():null; })
-            .then(function(txt){ if(txt){ try{ var j=JSON.parse(txt),id=f.name.replace(/\.json$/,''); if(state[id]) state[id]={dates:Array.isArray(j.dates)?j.dates:[],ts:j.ts||null}; }catch(e){} } })
+            .then(function(txt){ if(txt){ try{ var j=JSON.parse(txt),id=f.name.replace(/\.json$/,''); if(state[id]){ var v={}; if(j.votes&&typeof j.votes==='object'){v=j.votes;} else if(Array.isArray(j.dates)){j.dates.forEach(function(dd){v[dd]='yes';});} state[id]={votes:v,ts:j.ts||null}; } }catch(e){} } })
             .catch(function(){}).then(function(){ if(--pending<=0) render(); });
         });
       }).catch(function(){ note.textContent='Konnte die Stimmen gerade nicht laden – Verbindung prüfen.'; render(); });
