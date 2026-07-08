@@ -147,9 +147,12 @@
   /* MAP */
   .mapsec-sub{color:var(--muted);margin:2px 0 16px;}
   #map{height:380px;width:100%;border-radius:var(--radius);border:1.5px solid var(--line);box-shadow:var(--shadow);z-index:0;}
-  #map.map-full{position:fixed;inset:0;width:100vw!important;height:100vh!important;height:100dvh!important;z-index:1000;border-radius:0;border:none;margin:0;}
+  #map.map-full{position:fixed;inset:0;width:100%!important;height:100%!important;z-index:2000;border-radius:0;border:none;margin:0;max-width:none;}
+  #map:fullscreen{width:100%!important;height:100%!important;border-radius:0;border:none;}
+  #map:-webkit-full-screen{width:100%!important;height:100%!important;border-radius:0;border:none;}
   body.map-full-active{overflow:hidden;}
-  .map-fs-exit{display:none;position:fixed;top:12px;right:12px;z-index:1001;width:44px;height:44px;border-radius:50%;border:none;background:rgba(26,27,58,.92);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer;box-shadow:0 6px 18px -4px rgba(0,0,0,.5);}
+  .map-fs-exit{display:none;position:absolute;top:12px;right:12px;z-index:2100;width:46px;height:46px;border-radius:50%;border:none;background:rgba(26,27,58,.92);color:#fff;font-size:1.35rem;line-height:1;cursor:pointer;box-shadow:0 6px 18px -4px rgba(0,0,0,.5);}
+  #map.map-full .map-fs-exit,#map:fullscreen .map-fs-exit,#map:-webkit-full-screen .map-fs-exit{display:block;}
   .map-fs-exit:active{transform:scale(.94);}
   .leaflet-container{font-family:"Nunito",sans-serif;background:var(--surface);}
   .leaflet-tile{transition:filter .4s ease;}
@@ -513,7 +516,6 @@ Feli</textarea>
       </div>
       <div id="locInfo" class="loc-info"></div>
       <div id="map"></div>
-      <button id="fsExit" class="map-fs-exit" aria-label="Vollbild schließen" style="display:none">✕</button>
     </section>
 
     <section id="fotos" class="reveal">
@@ -897,34 +899,48 @@ Feli</textarea>
     setTimeout(function(){map.invalidateSize();},500);
     window.addEventListener('resize',function(){map.invalidateSize();});
 
-    // Karte im Vollbild anzeigen – dafür wird sie direkt an <body> gehängt,
-    // damit sie garantiert den ganzen Bildschirm füllt (funktioniert auch auf iPhone).
+    // Karte im Vollbild: echtes Browser-Vollbild (Desktop/Android), CSS-Rückfall (iPhone)
     (function(){
-      var fsBtn=document.getElementById('fsBtn'),fsExit=document.getElementById('fsExit');
-      var origParent=null,origNext=null,isFull=false;
-      function refresh(){ try{ map.invalidateSize(false); map.setView(map.getCenter(),map.getZoom(),{animate:false}); }catch(e){} }
-      function setFull(on){
-        if(on===isFull) return;
-        if(on){
-          origParent=mapEl.parentNode; origNext=mapEl.nextSibling;
-          document.body.appendChild(mapEl);
-          if(fsExit) document.body.appendChild(fsExit); // Schließen-Button sicher sichtbar
-          mapEl.classList.add('map-full');
-          document.body.classList.add('map-full-active');
-        } else {
-          mapEl.classList.remove('map-full');
-          document.body.classList.remove('map-full-active');
-          if(origParent){ origParent.insertBefore(mapEl, origNext); }
-        }
+      var fsBtn=document.getElementById('fsBtn');
+      // Schließen-Button IN die Karte setzen, damit er auch im nativen Vollbild sichtbar ist
+      var exit=document.createElement('button');
+      exit.className='map-fs-exit'; exit.type='button'; exit.setAttribute('aria-label','Vollbild schließen'); exit.textContent='✕';
+      mapEl.appendChild(exit);
+      if(window.L&&L.DomEvent){ try{ L.DomEvent.disableClickPropagation(exit); L.DomEvent.disableScrollPropagation(exit); }catch(e){} }
+
+      var isFull=false;
+      function fsEl(){ return document.fullscreenElement||document.webkitFullscreenElement||null; }
+      function refresh(){ try{ map.invalidateSize(false); }catch(e){} }
+      function afterState(on){
         isFull=on;
-        if(fsExit)fsExit.style.display=on?'':'none';
+        document.body.classList.toggle('map-full-active',on);
         if(fsBtn)fsBtn.textContent=on?'⛶ Schließen':'⛶ Vollbild';
-        // erst nach dem Layout neu zeichnen, sonst bleibt die Karte weiß
-        requestAnimationFrame(function(){ requestAnimationFrame(function(){ refresh(); setTimeout(refresh,250); setTimeout(refresh,600); }); });
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ refresh(); setTimeout(refresh,200); setTimeout(refresh,500); setTimeout(refresh,900); }); });
       }
-      if(fsBtn)fsBtn.addEventListener('click',function(){setFull(!isFull);});
-      if(fsExit)fsExit.addEventListener('click',function(){setFull(false);});
-      document.addEventListener('keydown',function(e){if(e.key==='Escape'&&isFull)setFull(false);});
+      function cssOpen(){ mapEl.classList.add('map-full'); afterState(true); }
+      function cssClose(){ mapEl.classList.remove('map-full'); afterState(false); }
+      function open(){
+        if(isFull) return;
+        var req=mapEl.requestFullscreen||mapEl.webkitRequestFullscreen;
+        if(req){
+          try{ var pr=req.call(mapEl); if(pr&&pr.then){ pr.then(function(){},function(){ cssOpen(); }); } return; }catch(e){}
+        }
+        cssOpen();
+      }
+      function close(){
+        if(!isFull) return;
+        if(fsEl()){ var ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex){ try{ ex.call(document); return; }catch(e){} } }
+        cssClose();
+      }
+      function onFsChange(){
+        if(fsEl()){ if(!isFull) afterState(true); }
+        else { if(isFull && !mapEl.classList.contains('map-full')) afterState(false); }
+      }
+      document.addEventListener('fullscreenchange',onFsChange);
+      document.addEventListener('webkitfullscreenchange',onFsChange);
+      if(fsBtn)fsBtn.addEventListener('click',function(){ isFull?close():open(); });
+      exit.addEventListener('click',function(e){ e.preventDefault(); close(); });
+      document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&isFull&&!fsEl()) close(); });
     })();
   })();
 
