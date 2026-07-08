@@ -369,7 +369,7 @@
       <span class="datechip rise d4"><span class="dot"></span>Donnerstag · 17. September 2026</span>
       <div class="facts rise d5">
         <span class="fact"><span class="emoji">🕘</span>Start 9:00 Uhr</span>
-        <span class="fact"><span class="emoji">👥</span> 7 Personen</span>
+        <span class="fact"><span class="emoji">👥</span>ca. 6 Personen</span>
         <span class="fact"><span class="emoji">🚇</span>alles mit den Öffis</span>
         <span class="fact"><span class="emoji">🎯</span>Highlight: Lasertag</span>
       </div>
@@ -459,7 +459,7 @@
           <div class="stop-rail"><div class="stop-icon">🌳</div></div>
           <div class="stop-card">
             <div class="stop-time">ab 15:00</div>
-            <h3 class="stop-title">Blacklite Arena (Minigolf)<span class="live-badge">● live</span></h3>
+            <h3 class="stop-title">Freier Nachmittag<span class="live-badge">● live</span></h3>
             <div class="stop-venue">Stadtpark</div>
             <div class="stop-addr">Parkring 1, 1010 Wien</div>
             <p class="stop-desc">Zeit zum Durchschnaufen: ein entspannter Spaziergang durch den Stadtpark – Grünflächen, Teich und Musikpavillon, mitten in der Stadt. Wer mag, kommt mit – wer will, macht Feierabend.</p>
@@ -492,11 +492,11 @@
       <h2>Lasertag: Teams auslosen 🎯</h2>
       <p class="sub">Namen eintragen, Knopf drücken – zwei faire Teams, fertig zum Loslegen.</p>
       <textarea id="names" spellcheck="false" aria-label="Namen eingeben">Alex
-Christian
-Markus
-Günther
-Hera
-Anja</textarea>
+Bea
+Chris
+Dana
+Emre
+Feli</textarea>
       <div class="draw-hint">Ein Name pro Zeile (oder mit Komma getrennt). Einfach bearbeiten.</div>
       <button class="draw-btn" id="drawBtn"><span class="zap">⚡</span> Teams auslosen</button>
       <div id="result"></div>
@@ -902,11 +902,13 @@ Anja</textarea>
     (function(){
       var fsBtn=document.getElementById('fsBtn'),fsExit=document.getElementById('fsExit');
       var origParent=null,origNext=null,isFull=false;
+      function refresh(){ try{ map.invalidateSize(false); map.setView(map.getCenter(),map.getZoom(),{animate:false}); }catch(e){} }
       function setFull(on){
         if(on===isFull) return;
         if(on){
           origParent=mapEl.parentNode; origNext=mapEl.nextSibling;
           document.body.appendChild(mapEl);
+          if(fsExit) document.body.appendChild(fsExit); // Schließen-Button sicher sichtbar
           mapEl.classList.add('map-full');
           document.body.classList.add('map-full-active');
         } else {
@@ -917,7 +919,8 @@ Anja</textarea>
         isFull=on;
         if(fsExit)fsExit.style.display=on?'':'none';
         if(fsBtn)fsBtn.textContent=on?'⛶ Schließen':'⛶ Vollbild';
-        setTimeout(function(){map.invalidateSize();},80);
+        // erst nach dem Layout neu zeichnen, sonst bleibt die Karte weiß
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ refresh(); setTimeout(refresh,250); setTimeout(refresh,600); }); });
       }
       if(fsBtn)fsBtn.addEventListener('click',function(){setFull(!isFull);});
       if(fsExit)fsExit.addEventListener('click',function(){setFull(false);});
@@ -935,7 +938,7 @@ Anja</textarea>
     function team(n,c,m){var l=m.map(function(x,i){return '<li style="animation-delay:'+(i*0.06)+'s">'+esc(x)+'</li>';}).join('');return '<div class="team" style="--tc:'+c+'"><h3>'+n+'</h3><ol>'+l+'</ol></div>';}
     function draw(){
       var names=parse(input.value);
-      if(names.length<2){result.innerHTML='<p class="draw-empty">Bitte alle Namen eingeben. 🙂</p>';return;}
+      if(names.length<2){result.innerHTML='<p class="draw-empty">Bitte mindestens 2 Namen eingeben. 🙂</p>';return;}
       shuffle(names);var h=Math.ceil(names.length/2);
       result.innerHTML='<div class="teams">'+team('🔴 Team Rot','#FF3D71',names.slice(0,h))+team('🔵 Team Blau','#4C5DF7',names.slice(h))+'</div>';
       btn.classList.remove('spin');void btn.offsetWidth;btn.classList.add('spin');
@@ -951,7 +954,7 @@ Anja</textarea>
     });
   })();
 
-  // ---------- Rickroll easter egg: click the title 1× ----------
+  // ---------- Rickroll easter egg: click the title 5× ----------
   (function(){
     var t=document.getElementById('rickTitle'),rr=document.getElementById('rr'),fr=document.getElementById('rrFrame'),cl=document.getElementById('rrClose');
     if(!t||!rr) return;
@@ -968,7 +971,7 @@ Anja</textarea>
       }catch(e){}},1100);
     }
     function close(){rr.classList.remove('open');fr.src='';}
-    function hit(){n++;clearTimeout(timer);timer=setTimeout(function(){n=0;},1200);if(n>=1){n=0;open();}}
+    function hit(){n++;clearTimeout(timer);timer=setTimeout(function(){n=0;},1200);if(n>=3){n=0;open();}}
     t.addEventListener('click',hit);
     t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();hit();}});
     cl.addEventListener('click',close);
