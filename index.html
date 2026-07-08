@@ -362,7 +362,7 @@
       <span class="eyebrow rise d1">IT-Abteilung · Ärztekammer Wien</span>
       <h1 class="title rise d2" id="rickTitle" role="button" tabindex="0" aria-label="Team-Building-Tag">Team-Building-Tag</h1>
       <p class="tagline rise d3">Kaffee, Lasertag und gutes Essen – ein Tag nur für uns.</p>
-      <span class="datechip rise d4"><span class="dot"></span>Donnerstag · 17. September 2026</span>
+      <span class="datechip rise d4"><span class="dot"></span>Termin folgt</span>
       <div class="facts rise d5">
         <span class="fact"><span class="emoji">🕘</span>Start 9:00 Uhr</span>
         <span class="fact"><span class="emoji">👥</span>7 Personen</span>
@@ -380,7 +380,7 @@
         <div class="weather-main">
           <span class="weather-emoji" id="wEmoji">🗓️</span>
           <div class="weather-info">
-            <span class="weather-label">Wetter am 17.09.2026 · Wien</span>
+            <span class="weather-label">Wetter · Wien</span>
             <span class="weather-temp" id="wTemp">–</span>
             <span class="weather-desc" id="wDesc">Vorhersage wird geladen …</span>
             <span class="weather-rain" id="wRain"></span>
@@ -548,7 +548,7 @@ Toni</textarea>
 
     <footer>
       Zusammengestellt für die IT-Abteilung der Ärztekammer Wien
-      <span class="ver">// Team-Building-Tag v2.1 · 17.09.2026</span>
+      <span class="ver">// Team-Building-Tag v2.1</span>
     </footer>
 
   </main>
@@ -673,8 +673,15 @@ Toni</textarea>
       if(h>0) return 'startet in '+h+' h '+mi+' min';
       return 'startet in '+mi+' min';
     }
+    var DATE_SET=false; // <-- auf true setzen, sobald der Termin feststeht
     function update(){
       var now=getNow();
+      if(!DATE_SET){
+        fill.style.width='0%'; knob.style.display='none';
+        status.className='prog-status'; status.textContent='📅 Termin wird noch fixiert';
+        stops.forEach(function(s){s.el.classList.remove('is-past','is-now');});
+        return;
+      }
       var pct=Math.max(0,Math.min(1,(now-DAY_START)/span))*100;
       fill.style.width=pct+'%';
       status.className='prog-status';
@@ -706,6 +713,14 @@ Toni</textarea>
   (function(){
     var emoji=document.getElementById('wEmoji'),temp=document.getElementById('wTemp'),desc=document.getElementById('wDesc'),rain=document.getElementById('wRain'),meta=document.getElementById('wMeta');
     if(!emoji) return;
+    var DATE_SET=false; // <-- auf true setzen, sobald der Termin feststeht
+    if(!DATE_SET){
+      emoji.textContent='📅';
+      temp.textContent='Termin folgt';
+      desc.textContent='Sobald der Termin feststeht, erscheint hier die Wettervorhersage.';
+      rain.textContent=''; meta.textContent='';
+      return;
+    }
     function wmo(c){
       if(c===0) return {e:'☀️',t:'Klar & sonnig'};
       if(c===1||c===2) return {e:'🌤️',t:'Heiter bis leicht bewölkt'};
