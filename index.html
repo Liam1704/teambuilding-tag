@@ -200,6 +200,34 @@
   .js .reveal{opacity:0;transform:translateY(16px);}
   .reveal.is-visible{opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease;}
 
+  /* TERMIN-ABSTIMMUNG */
+  #termin .poll-intro{color:var(--muted);margin:2px 0 16px;}
+  .me-pick{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 16px;}
+  .me-pick label{font-weight:800;}
+  .me-pick select{font-family:inherit;font-size:1rem;font-weight:700;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;}
+  .me-pick select:focus{outline:none;border-color:var(--primary);}
+  .poll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);background:var(--surface);}
+  table.poll{border-collapse:collapse;width:100%;min-width:340px;}
+  table.poll th,table.poll td{padding:9px 5px;text-align:center;border-bottom:1px solid var(--line);}
+  table.poll tr:last-child td{border-bottom:0;}
+  table.poll thead th{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap;background:var(--surface);}
+  table.poll th.best{color:var(--c-lunch);}
+  .count-badge{display:block;font-size:.66rem;color:var(--muted);margin-top:3px;font-weight:700;}
+  table.poll th.best .count-badge{color:var(--c-lunch);}
+  table.poll .who{text-align:left;font-weight:800;white-space:nowrap;position:sticky;left:0;background:var(--surface);min-width:100px;padding-left:12px;box-shadow:1px 0 0 var(--line);}
+  table.poll thead .corner{position:sticky;left:0;background:var(--surface);z-index:2;}
+  .who small{display:block;font-weight:600;font-size:.68rem;color:var(--muted);font-family:"JetBrains Mono",monospace;margin-top:2px;}
+  td.bestcol{background:color-mix(in srgb, var(--c-lunch) 10%, transparent);}
+  .cell{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;font-size:1.15rem;line-height:1;color:var(--line);user-select:none;}
+  .cell.on{color:var(--c-lunch);}
+  tr.me{background:color-mix(in srgb, var(--primary) 9%, transparent);}
+  tr.me .cell{cursor:pointer;border:1.5px dashed color-mix(in srgb, var(--primary) 40%, transparent);}
+  tr.me .cell:hover{background:color-mix(in srgb, var(--primary) 18%, transparent);}
+  tr.me .cell.on{border-style:solid;border-color:var(--c-lunch);}
+  .poll-summary{margin:16px 0 2px;font-weight:800;font-size:1.02rem;}
+  .poll-summary .hl{color:var(--c-lunch);}
+  .poll-note{color:var(--muted);font-size:.85rem;margin-top:6px;}
+
   @media (min-width:560px){.stop{grid-template-columns:60px 1fr;}}
   @media (max-width:420px){.teams{grid-template-columns:1fr;} .nav-brand{font-size:.98rem;} .nav-links a{padding:6px 8px;font-size:.82rem;} .theme-btn{width:34px;height:34px;}}
   @media (prefers-reduced-motion:reduce){
@@ -346,6 +374,7 @@
       <span class="nav-brand" data-scroll="top" role="button" tabindex="0">🎯 Team-Tag</span>
       <div class="nav-right">
         <div class="nav-links">
+          <a data-scroll="termin" role="button" tabindex="0">Termin</a>
           <a data-scroll="ablauf" role="button" tabindex="0">Ablauf</a>
           <a data-scroll="teams" role="button" tabindex="0">Teams</a>
           <a data-scroll="karte" role="button" tabindex="0">Karte</a>
@@ -388,6 +417,18 @@
         </div>
         <div class="weather-meta" id="wMeta"></div>
       </div>
+    </section>
+
+    <section id="termin" class="reveal">
+      <div class="sec-head"><h2>Termin finden</h2><span class="count">// Donnerstage Aug–Sep</span></div>
+      <p class="poll-intro">Der Tag ist noch nicht fix – fix ist nur: es wird ein <strong>Donnerstag</strong>. Trag ein, an welchen Donnerstagen du kannst. Alle sehen live, wer wann kann (inkl. Zeitpunkt der Abstimmung).</p>
+      <div class="me-pick">
+        <label for="terminMe">Wer bist du?</label>
+        <select id="terminMe"><option value="">— Namen wählen —</option></select>
+      </div>
+      <div class="poll-wrap"><table class="poll" id="pollTable"><thead></thead><tbody></tbody></table></div>
+      <div class="poll-summary" id="pollSummary">Abstimmung wird geladen …</div>
+      <p class="poll-note" id="pollNote"></p>
     </section>
 
     <section id="ablauf">
@@ -1310,6 +1351,100 @@ Christian</textarea>
   if('serviceWorker' in navigator){
     window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
   }
+</script>
+<script>
+  // TERMIN-ABSTIMMUNG (gemeinsam über Supabase, Ordner "termin/" im Foto-Bucket)
+  (function(){
+    var PEOPLE=[
+      {id:'p0',name:'Alex'},{id:'p1',name:'Hera'},{id:'p2',name:'Günther'},
+      {id:'p3',name:'Anja'},{id:'p4',name:'Markus'},{id:'p5',name:'Christian'},{id:'p6',name:'Christian (2)'}
+    ];
+    var DATES=[
+      {d:'2026-08-27',lbl:'Do 27.08.'},{d:'2026-09-03',lbl:'Do 03.09.'},{d:'2026-09-10',lbl:'Do 10.09.'},
+      {d:'2026-09-17',lbl:'Do 17.09.'},{d:'2026-09-24',lbl:'Do 24.09.'}
+    ];
+    var CFG=window.TBT_CLOUD||{},BUCKET=CFG.bucket||'Fotos',sb=null;
+    try{ sb=window.supabase&&window.supabase.createClient(CFG.url,CFG.anonKey); }catch(e){}
+    var state={}; PEOPLE.forEach(function(p){state[p.id]={dates:[],ts:null};});
+    var meId=null; try{ meId=localStorage.getItem('tbt_termin_me')||null; }catch(e){}
+
+    var sel=document.getElementById('terminMe');
+    var thead=document.querySelector('#pollTable thead');
+    var tbody=document.querySelector('#pollTable tbody');
+    var summary=document.getElementById('pollSummary');
+    var note=document.getElementById('pollNote');
+    if(!sel||!thead||!tbody) return;
+
+    PEOPLE.forEach(function(p){var o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o);});
+    if(meId && state[meId]) sel.value=meId; else meId=null;
+    sel.addEventListener('change',function(){ meId=sel.value||null; try{localStorage.setItem('tbt_termin_me',meId||'');}catch(e){} render(); });
+
+    function fmtTs(ts){ if(!ts) return '—'; try{ return new Date(ts).toLocaleString('de-AT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return '—'; } }
+    function counts(){ return DATES.map(function(d){ var n=0; PEOPLE.forEach(function(p){ if(state[p.id].dates.indexOf(d.d)>=0) n++; }); return n; }); }
+
+    function render(){
+      var cnt=counts(),max=cnt.length?Math.max.apply(null,cnt):0;
+      var h='<tr><th class="corner"></th>';
+      DATES.forEach(function(d,i){ var best=(max>0&&cnt[i]===max); h+='<th class="'+(best?'best':'')+'">'+d.lbl+'<span class="count-badge">'+cnt[i]+'/'+PEOPLE.length+'</span></th>'; });
+      thead.innerHTML=h+'</tr>';
+      var b='';
+      PEOPLE.forEach(function(p){
+        var isMe=(p.id===meId);
+        b+='<tr class="'+(isMe?'me':'')+'"><td class="who">'+p.name+'<small>'+(state[p.id].ts?('abgestimmt '+fmtTs(state[p.id].ts)):'—')+'</small></td>';
+        DATES.forEach(function(d,i){
+          var on=state[p.id].dates.indexOf(d.d)>=0,best=(max>0&&cnt[i]===max);
+          b+='<td class="'+(best?'bestcol':'')+'"><span class="cell '+(on?'on':'off')+'" data-id="'+p.id+'" data-date="'+d.d+'">'+(on?'✓':'·')+'</span></td>';
+        });
+        b+='</tr>';
+      });
+      tbody.innerHTML=b;
+      if(max<=0){ summary.innerHTML='Noch keine Stimmen – wähle oben deinen Namen und trag ein, wann du kannst.'; }
+      else {
+        var lbls=DATES.filter(function(d,i){return cnt[i]===max;}).map(function(d){return d.lbl;});
+        summary.innerHTML='Bester Termin bisher: <span class="hl">'+lbls.join(', ')+'</span> ('+max+' von '+PEOPLE.length+')';
+      }
+      note.textContent = meId ? 'Tipp: Tippe in deiner (blau markierten) Zeile auf die Donnerstage, an denen du kannst.' : 'Wähle oben deinen Namen, um abzustimmen.';
+    }
+
+    tbody.addEventListener('click',function(e){
+      var c=e.target&&e.target.closest?e.target.closest('.cell'):null; if(!c) return;
+      var id=c.getAttribute('data-id'),date=c.getAttribute('data-date');
+      if(id!==meId){ if(window.tbtToast) window.tbtToast('Wähle zuerst oben deinen Namen 🙂'); return; }
+      var arr=state[id].dates,ix=arr.indexOf(date);
+      if(ix>=0) arr.splice(ix,1); else arr.push(date);
+      state[id].ts=new Date().toISOString();
+      render(); save(id);
+    });
+
+    function save(id){
+      if(!sb){ if(window.tbtToast) window.tbtToast('Keine Cloud-Verbindung – Stimme nicht gespeichert.'); return; }
+      var person=PEOPLE.filter(function(p){return p.id===id;})[0];
+      var payload=JSON.stringify({name:person?person.name:id,dates:state[id].dates,ts:state[id].ts});
+      sb.storage.from(BUCKET).upload('termin/'+id+'.json',new Blob([payload],{type:'application/json'}),{upsert:true,contentType:'application/json'})
+        .then(function(r){ if(r&&r.error) throw r.error; if(window.tbtToast) window.tbtToast('✓ Gespeichert'); })
+        .catch(function(){ if(window.tbtToast) window.tbtToast('Speichern hat nicht geklappt – nochmal versuchen?'); });
+    }
+
+    function loadAll(){
+      if(!sb){ note.textContent='Für die gemeinsame Abstimmung braucht die Seite die Cloud-Verbindung (Supabase).'; render(); return; }
+      sb.storage.from(BUCKET).list('termin',{limit:200}).then(function(res){
+        if(res&&res.error) throw res.error;
+        var files=((res&&res.data)||[]).filter(function(o){return o.name&&/\.json$/.test(o.name);});
+        PEOPLE.forEach(function(p){ state[p.id]={dates:[],ts:null}; });
+        if(!files.length){ render(); return; }
+        var pending=files.length;
+        files.forEach(function(f){
+          sb.storage.from(BUCKET).download('termin/'+f.name).then(function(dl){ return (dl&&dl.data)?dl.data.text():null; })
+            .then(function(txt){ if(txt){ try{ var j=JSON.parse(txt),id=f.name.replace(/\.json$/,''); if(state[id]) state[id]={dates:Array.isArray(j.dates)?j.dates:[],ts:j.ts||null}; }catch(e){} } })
+            .catch(function(){}).then(function(){ if(--pending<=0) render(); });
+        });
+      }).catch(function(){ note.textContent='Konnte die Stimmen gerade nicht laden – Verbindung prüfen.'; render(); });
+    }
+
+    render(); loadAll();
+    setInterval(loadAll,15000);
+    document.addEventListener('visibilitychange',function(){ if(!document.hidden) loadAll(); });
+  })();
 </script>
 </body>
 </html>
