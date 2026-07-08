@@ -147,13 +147,6 @@
   /* MAP */
   .mapsec-sub{color:var(--muted);margin:2px 0 16px;}
   #map{height:380px;width:100%;border-radius:var(--radius);border:1.5px solid var(--line);box-shadow:var(--shadow);z-index:0;}
-  #map.map-full{position:fixed;inset:0;width:100%!important;height:100%!important;z-index:2000;border-radius:0;border:none;margin:0;max-width:none;}
-  #map:fullscreen{width:100%!important;height:100%!important;border-radius:0;border:none;}
-  #map:-webkit-full-screen{width:100%!important;height:100%!important;border-radius:0;border:none;}
-  body.map-full-active{overflow:hidden;}
-  .map-fs-exit{display:none;position:absolute;top:12px;right:12px;z-index:2100;width:46px;height:46px;border-radius:50%;border:none;background:rgba(26,27,58,.92);color:#fff;font-size:1.35rem;line-height:1;cursor:pointer;box-shadow:0 6px 18px -4px rgba(0,0,0,.5);}
-  #map.map-full .map-fs-exit,#map:fullscreen .map-fs-exit,#map:-webkit-full-screen .map-fs-exit{display:block;}
-  .map-fs-exit:active{transform:scale(.94);}
   .leaflet-container{font-family:"Nunito",sans-serif;background:var(--surface);}
   .leaflet-tile{transition:filter .4s ease;}
   :root[data-theme="dark"] .leaflet-tile{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9);}
@@ -512,7 +505,6 @@ Feli</textarea>
         <button class="btn btn-primary" id="locBtn">📍 Mein Standort</button>
         <button class="btn btn-ghost" id="centerBtn">🎯 Zentrieren</button>
         <button class="btn btn-ghost" id="routeBtn" style="display:none">🚇 Öffi-Route</button>
-        <button class="btn btn-ghost" id="fsBtn">⛶ Vollbild</button>
       </div>
       <div id="locInfo" class="loc-info"></div>
       <div id="map"></div>
@@ -899,57 +891,7 @@ Feli</textarea>
     setTimeout(function(){map.invalidateSize();},500);
     window.addEventListener('resize',function(){map.invalidateSize();});
 
-    // Karte im Vollbild: echtes Browser-Vollbild (Desktop/Android), CSS-Rückfall (iPhone)
-    (function(){
-      var fsBtn=document.getElementById('fsBtn');
-      // Schließen-Button IN die Karte setzen, damit er auch im nativen Vollbild sichtbar ist
-      var exit=document.createElement('button');
-      exit.className='map-fs-exit'; exit.type='button'; exit.setAttribute('aria-label','Vollbild schließen'); exit.textContent='✕';
-      mapEl.appendChild(exit);
-      if(window.L&&L.DomEvent){ try{ L.DomEvent.disableClickPropagation(exit); L.DomEvent.disableScrollPropagation(exit); }catch(e){} }
 
-      var isFull=false,origParent=null,origNext=null;
-      function fsEl(){ return document.fullscreenElement||document.webkitFullscreenElement||null; }
-      function refresh(){ try{ map.invalidateSize(false); if(typeof tiles!=='undefined'&&tiles&&tiles.redraw) tiles.redraw(); }catch(e){} }
-      function afterState(on){
-        isFull=on;
-        document.body.classList.toggle('map-full-active',on);
-        if(fsBtn)fsBtn.textContent=on?'⛶ Schließen':'⛶ Vollbild';
-        requestAnimationFrame(function(){ requestAnimationFrame(function(){ refresh(); setTimeout(refresh,200); setTimeout(refresh,500); setTimeout(refresh,900); }); });
-      }
-      function cssOpen(){
-        origParent=mapEl.parentNode; origNext=mapEl.nextSibling;
-        document.body.appendChild(mapEl);           // wie das DVD-Logo: direkt am Body -> volle Fläche
-        mapEl.classList.add('map-full'); afterState(true);
-      }
-      function cssClose(){
-        mapEl.classList.remove('map-full');
-        if(origParent){ origParent.insertBefore(mapEl, origNext); }
-        afterState(false);
-      }
-      function open(){
-        if(isFull) return;
-        var req=mapEl.requestFullscreen||mapEl.webkitRequestFullscreen;
-        if(req){
-          try{ var pr=req.call(mapEl); if(pr&&pr.then){ pr.then(function(){},function(){ cssOpen(); }); } return; }catch(e){}
-        }
-        cssOpen();
-      }
-      function close(){
-        if(!isFull) return;
-        if(fsEl()){ var ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex){ try{ ex.call(document); return; }catch(e){} } }
-        cssClose();
-      }
-      function onFsChange(){
-        if(fsEl()){ if(!isFull) afterState(true); }
-        else { if(isFull && !mapEl.classList.contains('map-full')) afterState(false); }
-      }
-      document.addEventListener('fullscreenchange',onFsChange);
-      document.addEventListener('webkitfullscreenchange',onFsChange);
-      if(fsBtn)fsBtn.addEventListener('click',function(){ isFull?close():open(); });
-      exit.addEventListener('click',function(e){ e.preventDefault(); close(); });
-      document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&isFull&&!fsEl()) close(); });
-    })();
   })();
 
   // Team draw
