@@ -293,7 +293,7 @@
 
   /* Completed-stop overlay (blurred, centered text over the card) */
   .stop-card{position:relative;}
-  /* Lasertag-Zeitfenster: die GANZE Seite kraeftig in Team-Farbe tauchen */
+  /* Team-Farbe: ganze Seite kraeftig einfaerben (bis zum Schliessen der Seite) */
   html.laser-red body{background:#E11D48;}
   html.laser-blue body{background:#3B4CDB;}
   html.laser-red body::before,html.laser-blue body::before{opacity:0;}
@@ -1055,7 +1055,7 @@ Christian L.</textarea>
       var me=myName();
       function inTeam(arr){ return !!me && arr.some(function(n){ return n.toLowerCase()===me.toLowerCase(); }); }
       var t=inTeam(red)?'red':(inTeam(blue)?'blue':null);
-      try{ if(t) localStorage.setItem('tbt_myteam',t); else localStorage.removeItem('tbt_myteam'); }catch(e){}
+      try{ if(t) sessionStorage.setItem('tbt_myteam',t); else sessionStorage.removeItem('tbt_myteam'); }catch(e){}
       if(window.tbtCheckLaserBg) window.tbtCheckLaserBg();
     }
     var lastRed=null,lastBlue=null;
@@ -1073,18 +1073,14 @@ Christian L.</textarea>
     if(meSel) meSel.addEventListener('change',function(){ if(lastRed) saveTeam(lastRed,lastBlue); });
   })();
 
-  // ---------- Lasertag-Zeitfenster: ganze Seite in Team-Farbe ----------
+  // ---------- Team-Farbe als Seiten-Hintergrund (bleibt bis zum Schliessen der Seite) ----------
   (function(){
     var root=document.documentElement;
-    function myTeam(){ try{ return localStorage.getItem('tbt_myteam')||null; }catch(e){ return null; } }
+    function myTeam(){ try{ return sessionStorage.getItem('tbt_myteam')||null; }catch(e){ return null; } }
     function want(){
-      var qp=new URLSearchParams(location.search),force=qp.get('laser'),st=qp.get('state');
+      var force=(new URLSearchParams(location.search)).get('laser');
       if(force==='red'||force==='blue') return force;
-      var team=myTeam();
-      if(st==='now'&&team) return team;
-      var d=window.__tbtDate; if(!d||!team) return null;
-      var start=new Date(d+'T10:45:00+02:00').getTime(),end=new Date(d+'T12:45:00+02:00').getTime(),now=Date.now();
-      return (now>=start&&now<end)?team:null;
+      return myTeam();
     }
     function apply(){
       var t=want();
@@ -1093,8 +1089,7 @@ Christian L.</textarea>
       else if(t==='blue') root.classList.add('laser-blue');
     }
     window.tbtCheckLaserBg=apply;
-    if(window.tbtRegisterDateHandler) window.tbtRegisterDateHandler(apply);
-    apply(); setInterval(apply,30000);
+    apply();
   })();
 
   // ---------- Completed-stop overlays (blurred "Erledigt" badge) ----------
