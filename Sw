@@ -1,5 +1,5 @@
 /* Team-Tag PWA Service Worker */
-var CACHE = 'tbt-v1';
+var CACHE = 'tbt-v2';
 var PRECACHE = ['./', './index.html'];
 
 /* Statische Assets, die offline nützlich sind (Schriften, Karten-/Cloud-Bibliotheken) */
@@ -33,7 +33,7 @@ self.addEventListener('fetch', function (e) {
   /* Seite selbst: erst Netz (immer aktuell), sonst aus dem Cache (offline) */
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').indexOf('text/html') >= 0) {
     e.respondWith(
-      fetch(req).then(function (res) {
+      fetch(req, { cache: 'no-store' }).then(function (res) {
         var copy = res.clone();
         caches.open(CACHE).then(function (c) { c.put('./index.html', copy); }).catch(function () {});
         return res;
