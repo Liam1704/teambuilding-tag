@@ -293,6 +293,11 @@
 
   /* Completed-stop overlay (blurred, centered text over the card) */
   .stop-card{position:relative;}
+  /* Lasertag-Karte: Team-Farbe (Rot/Blau) sanft einblenden, wenn man ausgelost wurde */
+  .stop[data-name="Lasertag"] .stop-card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;background:var(--team-tint,transparent);opacity:0;transition:opacity .6s ease;}
+  .stop[data-name="Lasertag"] .stop-card > *{position:relative;z-index:1;}
+  .stop.team-tinted[data-name="Lasertag"] .stop-card::after{opacity:.22;}
+  .stop.team-tinted[data-name="Lasertag"] .stop-card{border-color:var(--team-tint);border-left-color:var(--team-tint);}
   .stop-done-ov{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border-radius:var(--radius);z-index:4;backdrop-filter:blur(3px) saturate(.9);-webkit-backdrop-filter:blur(3px) saturate(.9);background:color-mix(in srgb,var(--surface) 55%, transparent);}
   .stop.is-past .stop-done-ov{display:flex;}
   .stop.is-past .stop-card{opacity:1;}
@@ -389,6 +394,14 @@
   /* Confetti */
   #confetti{position:fixed;inset:0;z-index:250;pointer-events:none;display:none;}
   #confetti.on{display:block;}
+  /* Easter-Egg-Effekte (Laserstrahl + Emoji-Regen) */
+  .egg-beam{position:fixed;left:-30%;top:-40%;width:160%;height:5px;z-index:400;pointer-events:none;opacity:0;transform:rotate(16deg);
+    background:linear-gradient(90deg,transparent,var(--c-laser),#fff,var(--c-laser),transparent);
+    box-shadow:0 0 20px 7px color-mix(in srgb,var(--c-laser) 65%, transparent);}
+  .egg-beam.go{animation:eggBeam .75s ease-out forwards;}
+  @keyframes eggBeam{0%{opacity:0;transform:rotate(16deg) translateY(0);}12%{opacity:1;}100%{opacity:0;transform:rotate(16deg) translateY(130vh);}}
+  .egg-emoji{position:fixed;top:-48px;z-index:400;pointer-events:none;will-change:transform;animation:eggFall linear forwards;}
+  @keyframes eggFall{to{transform:translateY(112vh) rotate(360deg);}}
 
   @media (max-width:420px){
     .gal-grid{grid-template-columns:repeat(2,1fr);}
@@ -1038,14 +1051,28 @@ Christian L.</textarea>
     function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
     function esc(s){return s.replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
     function team(n,c,m){var l=m.map(function(x,i){return '<li style="animation-delay:'+(i*0.06)+'s">'+esc(x)+'</li>';}).join('');return '<div class="team" style="--tc:'+c+'"><h3>'+n+'</h3><ol>'+l+'</ol></div>';}
+    function myName(){ var sel=document.getElementById('terminMe'); if(!sel||!sel.value) return null; var o=sel.options[sel.selectedIndex]; return o?o.textContent.trim():null; }
+    function tintLaser(red,blue){
+      var laser=document.querySelector('.stop[data-name="Lasertag"]'); if(!laser) return;
+      var me=myName();
+      function inTeam(arr){ return !!me && arr.some(function(n){ return n.toLowerCase()===me.toLowerCase(); }); }
+      laser.classList.remove('team-tinted');
+      if(inTeam(red)){ laser.style.setProperty('--team-tint','#FF3D71'); laser.classList.add('team-tinted'); }
+      else if(inTeam(blue)){ laser.style.setProperty('--team-tint','#4C5DF7'); laser.classList.add('team-tinted'); }
+    }
+    var lastRed=null,lastBlue=null;
     function draw(){
       var names=parse(input.value);
-      if(names.length<2){result.innerHTML='<p class="draw-empty">Bitte mindestens 2 Namen eingeben. 🙂</p>';return;}
+      if(names.length<2){ result.innerHTML='<p class="draw-empty">Bitte mindestens 2 Namen eingeben. 🙂</p>'; lastRed=lastBlue=null; var lz=document.querySelector('.stop[data-name="Lasertag"]'); if(lz) lz.classList.remove('team-tinted'); return; }
       shuffle(names);var h=Math.ceil(names.length/2);
-      result.innerHTML='<div class="teams">'+team('🔴 Team Rot','#FF3D71',names.slice(0,h))+team('🔵 Team Blau','#4C5DF7',names.slice(h))+'</div>';
+      var red=names.slice(0,h),blue=names.slice(h);
+      result.innerHTML='<div class="teams">'+team('🔴 Team Rot','#FF3D71',red)+team('🔵 Team Blau','#4C5DF7',blue)+'</div>';
       btn.classList.remove('spin');void btn.offsetWidth;btn.classList.add('spin');
+      lastRed=red;lastBlue=blue;tintLaser(red,blue);
     }
     btn.addEventListener('click',draw);
+    var meSel=document.getElementById('terminMe');
+    if(meSel) meSel.addEventListener('change',function(){ if(lastRed) tintLaser(lastRed,lastBlue); });
   })();
 
   // ---------- Completed-stop overlays (blurred "Erledigt" badge) ----------
@@ -1545,6 +1572,60 @@ Christian L.</textarea>
     render(); loadAll();
     setInterval(loadAll,15000);
     document.addEventListener('visibilitychange',function(){ if(!document.hidden) loadAll(); });
+  })();
+</script>
+<script>
+  // ---------- Mehr Easter Eggs: Tipp-Wörter, Logo-Spam, Konsolen-Gruß ----------
+  (function(){
+    var rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Gruß in der Entwickler-Konsole (für die neugierige IT)
+    try{
+      console.log('%c🎯 Team-Building-Tag','font:700 22px Fredoka,system-ui,sans-serif;color:#FF3D71;');
+      console.log('%cNeugierig? Hier sind ein paar Easter Eggs versteckt. 😉\nProbier den Konami-Code, tippe „laser" oder „party" – oder klick 5× aufs Logo.','color:#4C5DF7;font-size:13px;line-height:1.5;');
+    }catch(e){}
+
+    function typing(){ var a=document.activeElement; return !!(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'||a.isContentEditable)); }
+
+    function laserBeam(){
+      if(rm) return;
+      var b=document.createElement('div'); b.className='egg-beam'; document.body.appendChild(b);
+      requestAnimationFrame(function(){ b.classList.add('go'); });
+      setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 850);
+    }
+    function emojiRain(emoji,count){
+      if(rm) return;
+      for(var i=0;i<count;i++){
+        var s=document.createElement('div'); s.className='egg-emoji'; s.textContent=emoji;
+        s.style.left=(Math.random()*100)+'vw';
+        var dur=2.2+Math.random()*1.8;
+        s.style.animationDuration=dur+'s';
+        s.style.animationDelay=(Math.random()*0.5)+'s';
+        s.style.fontSize=(1.3+Math.random()*1.5)+'rem';
+        document.body.appendChild(s);
+        (function(el,d){ setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, (d+1)*1000); })(s,dur);
+      }
+    }
+
+    // Tipp-Wörter
+    var buf='';
+    document.addEventListener('keydown',function(e){
+      if(typing()||!e.key||e.key.length!==1) return;
+      buf=(buf+e.key.toLowerCase()).slice(-14);
+      if(buf.slice(-5)==='laser'){ buf=''; laserBeam(); if(window.tbtToast) window.tbtToast('🔫 Pew pew!'); }
+      else if(buf.slice(-5)==='party'){ buf=''; if(window.tbtConfetti) window.tbtConfetti(); if(window.tbtToast) window.tbtToast('🎉 Party-Modus!'); }
+      else if(buf.slice(-3)==='pew'){ buf=''; laserBeam(); }
+    });
+
+    // Logo 5× schnell klicken -> 🎯-Regen
+    var brand=document.querySelector('.nav-brand');
+    if(brand){
+      var clicks=0,timer=null;
+      brand.addEventListener('click',function(){
+        clicks++; clearTimeout(timer); timer=setTimeout(function(){clicks=0;},1500);
+        if(clicks>=5){ clicks=0; emojiRain('🎯',22); if(window.tbtToast) window.tbtToast('🎯 Volltreffer!'); }
+      });
+    }
   })();
 </script>
 </body>
