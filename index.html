@@ -257,7 +257,7 @@
       radial-gradient(32% 36% at 22% 55%, color-mix(in srgb,var(--c-breakfast) 15%, transparent), transparent 70%),
       radial-gradient(34% 38% at 82% 62%, color-mix(in srgb,var(--c-lunch) 15%, transparent), transparent 70%),
       radial-gradient(30% 34% at 50% 92%, color-mix(in srgb,var(--c-free) 15%, transparent), transparent 70%);
-    background-size:200% 200%;opacity:.7;animation:aurora 26s ease-in-out infinite;}
+    background-size:200% 200%;opacity:.7;animation:aurora 26s ease-in-out infinite;transition:opacity .8s ease;}
   @keyframes aurora{
     0%,100%{background-position:0% 0%,100% 0%,0% 100%,100% 100%,50% 50%;}
     50%{background-position:25% 30%,70% 25%,20% 70%,80% 55%,45% 40%;}
@@ -293,11 +293,10 @@
 
   /* Completed-stop overlay (blurred, centered text over the card) */
   .stop-card{position:relative;}
-  /* Lasertag-Karte: Team-Farbe (Rot/Blau) sanft einblenden, wenn man ausgelost wurde */
-  .stop[data-name="Lasertag"] .stop-card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;background:var(--team-tint,transparent);opacity:0;transition:opacity .6s ease;}
-  .stop[data-name="Lasertag"] .stop-card > *{position:relative;z-index:1;}
-  .stop.team-tinted[data-name="Lasertag"] .stop-card::after{opacity:.22;}
-  .stop.team-tinted[data-name="Lasertag"] .stop-card{border-color:var(--team-tint);border-left-color:var(--team-tint);}
+  /* Lasertag-Zeitfenster: die GANZE Seite kraeftig in Team-Farbe tauchen */
+  html.laser-red body{background:#E11D48;}
+  html.laser-blue body{background:#3B4CDB;}
+  html.laser-red body::before,html.laser-blue body::before{opacity:0;}
   .stop-done-ov{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border-radius:var(--radius);z-index:4;backdrop-filter:blur(3px) saturate(.9);-webkit-backdrop-filter:blur(3px) saturate(.9);background:color-mix(in srgb,var(--surface) 55%, transparent);}
   .stop.is-past .stop-done-ov{display:flex;}
   .stop.is-past .stop-card{opacity:1;}
@@ -1052,27 +1051,50 @@ Christian L.</textarea>
     function esc(s){return s.replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
     function team(n,c,m){var l=m.map(function(x,i){return '<li style="animation-delay:'+(i*0.06)+'s">'+esc(x)+'</li>';}).join('');return '<div class="team" style="--tc:'+c+'"><h3>'+n+'</h3><ol>'+l+'</ol></div>';}
     function myName(){ var sel=document.getElementById('terminMe'); if(!sel||!sel.value) return null; var o=sel.options[sel.selectedIndex]; return o?o.textContent.trim():null; }
-    function tintLaser(red,blue){
-      var laser=document.querySelector('.stop[data-name="Lasertag"]'); if(!laser) return;
+    function saveTeam(red,blue){
       var me=myName();
       function inTeam(arr){ return !!me && arr.some(function(n){ return n.toLowerCase()===me.toLowerCase(); }); }
-      laser.classList.remove('team-tinted');
-      if(inTeam(red)){ laser.style.setProperty('--team-tint','#FF3D71'); laser.classList.add('team-tinted'); }
-      else if(inTeam(blue)){ laser.style.setProperty('--team-tint','#4C5DF7'); laser.classList.add('team-tinted'); }
+      var t=inTeam(red)?'red':(inTeam(blue)?'blue':null);
+      try{ if(t) localStorage.setItem('tbt_myteam',t); else localStorage.removeItem('tbt_myteam'); }catch(e){}
+      if(window.tbtCheckLaserBg) window.tbtCheckLaserBg();
     }
     var lastRed=null,lastBlue=null;
     function draw(){
       var names=parse(input.value);
-      if(names.length<2){ result.innerHTML='<p class="draw-empty">Bitte mindestens 2 Namen eingeben. 🙂</p>'; lastRed=lastBlue=null; var lz=document.querySelector('.stop[data-name="Lasertag"]'); if(lz) lz.classList.remove('team-tinted'); return; }
+      if(names.length<2){ result.innerHTML='<p class="draw-empty">Bitte mindestens 2 Namen eingeben. 🙂</p>'; lastRed=lastBlue=null; return; }
       shuffle(names);var h=Math.ceil(names.length/2);
       var red=names.slice(0,h),blue=names.slice(h);
       result.innerHTML='<div class="teams">'+team('🔴 Team Rot','#FF3D71',red)+team('🔵 Team Blau','#4C5DF7',blue)+'</div>';
       btn.classList.remove('spin');void btn.offsetWidth;btn.classList.add('spin');
-      lastRed=red;lastBlue=blue;tintLaser(red,blue);
+      lastRed=red;lastBlue=blue;saveTeam(red,blue);
     }
     btn.addEventListener('click',draw);
     var meSel=document.getElementById('terminMe');
-    if(meSel) meSel.addEventListener('change',function(){ if(lastRed) tintLaser(lastRed,lastBlue); });
+    if(meSel) meSel.addEventListener('change',function(){ if(lastRed) saveTeam(lastRed,lastBlue); });
+  })();
+
+  // ---------- Lasertag-Zeitfenster: ganze Seite in Team-Farbe ----------
+  (function(){
+    var root=document.documentElement;
+    function myTeam(){ try{ return localStorage.getItem('tbt_myteam')||null; }catch(e){ return null; } }
+    function want(){
+      var qp=new URLSearchParams(location.search),force=qp.get('laser'),st=qp.get('state');
+      if(force==='red'||force==='blue') return force;
+      var team=myTeam();
+      if(st==='now'&&team) return team;
+      var d=window.__tbtDate; if(!d||!team) return null;
+      var start=new Date(d+'T10:45:00+02:00').getTime(),end=new Date(d+'T12:45:00+02:00').getTime(),now=Date.now();
+      return (now>=start&&now<end)?team:null;
+    }
+    function apply(){
+      var t=want();
+      root.classList.remove('laser-red','laser-blue');
+      if(t==='red') root.classList.add('laser-red');
+      else if(t==='blue') root.classList.add('laser-blue');
+    }
+    window.tbtCheckLaserBg=apply;
+    if(window.tbtRegisterDateHandler) window.tbtRegisterDateHandler(apply);
+    apply(); setInterval(apply,30000);
   })();
 
   // ---------- Completed-stop overlays (blurred "Erledigt" badge) ----------
