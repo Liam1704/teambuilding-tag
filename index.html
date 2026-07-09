@@ -396,7 +396,7 @@
       <span class="eyebrow rise d1">IT-Abteilung · Ärztekammer Wien</span>
       <h1 class="title rise d2" id="rickTitle" role="button" tabindex="0" aria-label="Team-Building-Tag">Team-Building-Tag</h1>
       <p class="tagline rise d3">Kaffee, Lasertag und gutes Essen – ein Tag nur für uns.</p>
-      <span class="datechip rise d4"><span class="dot"></span>Termin folgt</span>
+      <span class="datechip rise d4"><span class="dot"></span><span id="dateChipText">Termin folgt</span></span>
       <div class="facts rise d5">
         <span class="fact"><span class="emoji">🕘</span>Start 9:00 Uhr</span>
         <span class="fact"><span class="emoji">👥</span>7 Personen</span>
@@ -414,7 +414,7 @@
         <div class="weather-main">
           <span class="weather-emoji" id="wEmoji">🗓️</span>
           <div class="weather-info">
-            <span class="weather-label">Wetter · Wien</span>
+            <span class="weather-label" id="wLabel">Wetter · Wien</span>
             <span class="weather-temp" id="wTemp">–</span>
             <span class="weather-desc" id="wDesc">Vorhersage wird geladen …</span>
             <span class="weather-rain" id="wRain"></span>
@@ -697,37 +697,75 @@ Christian L.</textarea>
     items.forEach(function(el){io.observe(el);});
   })();
 
+  // --- Termin-Koordinator: schaltet Datum, Countdown & Wetter automatisch scharf ---
+  (function(){
+    window.__tbtDate=window.__tbtDate||null;
+    window.__tbtDateHandlers=window.__tbtDateHandlers||[];
+    window.tbtRegisterDateHandler=function(fn){
+      window.__tbtDateHandlers.push(fn);
+      if(window.__tbtDate){ try{fn(window.__tbtDate);}catch(e){} }
+    };
+    window.tbtConfirmEventDate=function(dateStr){
+      if(!dateStr||window.__tbtDate===dateStr) return;
+      window.__tbtDate=dateStr;
+      window.__tbtDateHandlers.forEach(function(fn){ try{fn(dateStr);}catch(e){} });
+    };
+    // Datumschip oben + Wetter-Label scharf schalten
+    window.tbtRegisterDateHandler(function(dateStr){
+      try{
+        var months=['Januar','Februar','M\u00e4rz','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+        var days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+        var p=dateStr.split('-'),dt=new Date(+p[0],+p[1]-1,+p[2]);
+        var el=document.getElementById('dateChipText');
+        if(el) el.textContent=days[dt.getDay()]+' \u00b7 '+dt.getDate()+'. '+months[dt.getMonth()]+' '+dt.getFullYear();
+        var wl=document.getElementById('wLabel');
+        if(wl) wl.textContent='Wetter am '+p[2]+'.'+p[1]+'.'+p[0]+' \u00b7 Wien';
+      }catch(e){}
+    });
+    // Test/Vorschau: ?date=YYYY-MM-DD erzwingt einen Termin
+    var dq=(new URLSearchParams(location.search)).get('date');
+    if(dq){ setTimeout(function(){ window.tbtConfirmEventDate(dq); },0); }
+  })();
+
   // Day progress
   (function(){
     var track=document.getElementById('progTrack'),fill=document.getElementById('progFill'),knob=document.getElementById('progKnob'),status=document.getElementById('progStatus');
     if(!track) return;
-    var DAY_START=new Date('2026-09-17T09:00:00+02:00').getTime();
-    var DAY_END=new Date('2026-09-17T19:45:00+02:00').getTime();
-    var span=DAY_END-DAY_START;
+    var TIME_START='09:00:00+02:00',TIME_END='19:45:00+02:00';
     var qp=new URLSearchParams(location.search),STATE=qp.get('state');
-    function getNow(){ if(STATE==='done') return DAY_END+60000; if(STATE==='now') return new Date('2026-09-17T11:30:00+02:00').getTime(); return Date.now(); }
-    var celebrated=false;
-    var colors={'Frühstück':'#F4A81D','Lasertag':'#FF3D71','Mittagessen':'#16C79A','Minigolf':'#9B8CFF','Abendessen':'#FF7A45'};
+    var colors={'Fr\u00fchst\u00fcck':'#F4A81D','Lasertag':'#FF3D71','Mittagessen':'#16C79A','Minigolf':'#9B8CFF','Abendessen':'#FF7A45'};
     var stops=[].map.call(document.querySelectorAll('#ablauf .timeline .stop'),function(el){
-      return {el:el,start:new Date(el.getAttribute('data-start')).getTime(),end:new Date(el.getAttribute('data-end')).getTime(),name:el.getAttribute('data-name'),emoji:el.getAttribute('data-emoji')};
+      var ds=el.getAttribute('data-start')||'',de=el.getAttribute('data-end')||'';
+      return {el:el,st:(ds.split('T')[1]||'09:00:00+02:00'),et:(de.split('T')[1]||'10:00:00+02:00'),name:el.getAttribute('data-name'),emoji:el.getAttribute('data-emoji'),start:0,end:0};
     });
-    stops.forEach(function(s){
-      var left=Math.max(0,Math.min(1,(s.start-DAY_START)/span))*100;
-      var m=document.createElement('div');m.className='prog-mark';m.style.left=left+'%';m.style.setProperty('--mc',colors[s.name]||'#4C5DF7');m.title=s.name;
-      track.appendChild(m);
-    });
+    var DAY_START=0,DAY_END=0,span=1,DATE_SET=false,celebrated=false,marksDone=false;
+    function getNow(){ if(!DATE_SET) return Date.now(); if(STATE==='done') return DAY_END+60000; if(STATE==='now') return DAY_START+9000000; return Date.now(); }
     function untilText(ms){
       var d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),mi=Math.floor(ms%3600000/60000);
       if(d>0) return 'startet in '+d+' Tag'+(d===1?'':'en');
       if(h>0) return 'startet in '+h+' h '+mi+' min';
       return 'startet in '+mi+' min';
     }
-    var DATE_SET=false; // <-- auf true setzen, sobald der Termin feststeht
+    function buildMarks(){
+      if(marksDone) return; marksDone=true;
+      stops.forEach(function(s){
+        var left=Math.max(0,Math.min(1,(s.start-DAY_START)/span))*100;
+        var m=document.createElement('div');m.className='prog-mark';m.style.left=left+'%';m.style.setProperty('--mc',colors[s.name]||'#4C5DF7');m.title=s.name;
+        track.appendChild(m);
+      });
+    }
+    function applyDate(dateStr){
+      DAY_START=new Date(dateStr+'T'+TIME_START).getTime();
+      DAY_END=new Date(dateStr+'T'+TIME_END).getTime();
+      span=(DAY_END-DAY_START)||1;
+      stops.forEach(function(s){ s.start=new Date(dateStr+'T'+s.st).getTime(); s.end=new Date(dateStr+'T'+s.et).getTime(); });
+      DATE_SET=true; buildMarks(); update();
+    }
     function update(){
       var now=getNow();
       if(!DATE_SET){
         fill.style.width='0%'; knob.style.display='none';
-        status.className='prog-status'; status.textContent='📅 Termin wird noch fixiert';
+        status.className='prog-status'; status.textContent='\ud83d\udcc5 Termin wird noch fixiert';
         stops.forEach(function(s){s.el.classList.remove('is-past','is-now');});
         return;
       }
@@ -736,9 +774,9 @@ Christian L.</textarea>
       status.className='prog-status';
       stops.forEach(function(s){s.el.classList.remove('is-past','is-now');});
       if(now<DAY_START){
-        knob.style.display='none';status.textContent='Der große Tag '+untilText(DAY_START-now);
+        knob.style.display='none';status.textContent='Der gro\u00dfe Tag '+untilText(DAY_START-now);
       } else if(now>=DAY_END){
-        knob.style.display='none';status.textContent='Tag geschafft 🎉';status.classList.add('st-done');
+        knob.style.display='none';status.textContent='Tag geschafft \ud83c\udf89';status.classList.add('st-done');
         stops.forEach(function(s){s.el.classList.add('is-past');});
         if(!celebrated){celebrated=true;setTimeout(function(){if(window.celebrate)window.celebrate();},400);}
       } else {
@@ -751,61 +789,64 @@ Christian L.</textarea>
         });
         status.classList.add('st-now');
         if(current) status.textContent='Gerade: '+current.name+' '+current.emoji;
-        else if(next) status.textContent='Unterwegs → '+next.name+' '+next.emoji;
-        else status.textContent='läuft …';
+        else if(next) status.textContent='Unterwegs \u2192 '+next.name+' '+next.emoji;
+        else status.textContent='l\u00e4uft \u2026';
       }
     }
     update();setInterval(update,30000);
+    window.tbtRegisterDateHandler(applyDate);
   })();
 
   // Weather (Open-Meteo, no API key)
   (function(){
     var emoji=document.getElementById('wEmoji'),temp=document.getElementById('wTemp'),desc=document.getElementById('wDesc'),rain=document.getElementById('wRain'),meta=document.getElementById('wMeta');
     if(!emoji) return;
-    var DATE_SET=false; // <-- auf true setzen, sobald der Termin feststeht
-    if(!DATE_SET){
-      emoji.textContent='📅';
+    function wmo(c){
+      if(c===0) return {e:'\u2600\ufe0f',t:'Klar & sonnig'};
+      if(c===1||c===2) return {e:'\ud83c\udf24\ufe0f',t:'Heiter bis leicht bew\u00f6lkt'};
+      if(c===3) return {e:'\u2601\ufe0f',t:'Bew\u00f6lkt'};
+      if(c===45||c===48) return {e:'\ud83c\udf2b\ufe0f',t:'Neblig'};
+      if(c>=51&&c<=57) return {e:'\ud83c\udf26\ufe0f',t:'Nieselregen'};
+      if(c>=61&&c<=67) return {e:'\ud83c\udf27\ufe0f',t:'Regen'};
+      if(c>=71&&c<=77) return {e:'\ud83c\udf28\ufe0f',t:'Schnee'};
+      if(c>=80&&c<=82) return {e:'\ud83c\udf26\ufe0f',t:'Regenschauer'};
+      if(c>=95) return {e:'\u26c8\ufe0f',t:'Gewitter'};
+      return {e:'\ud83c\udf21\ufe0f',t:'Wechselhaft'};
+    }
+    function waiting(){
+      emoji.textContent='\ud83d\udcc5';
       temp.textContent='Termin folgt';
       desc.textContent='Sobald der Termin feststeht, erscheint hier die Wettervorhersage.';
       rain.textContent=''; meta.textContent='';
-      return;
-    }
-    function wmo(c){
-      if(c===0) return {e:'☀️',t:'Klar & sonnig'};
-      if(c===1||c===2) return {e:'🌤️',t:'Heiter bis leicht bewölkt'};
-      if(c===3) return {e:'☁️',t:'Bewölkt'};
-      if(c===45||c===48) return {e:'🌫️',t:'Neblig'};
-      if(c>=51&&c<=57) return {e:'🌦️',t:'Nieselregen'};
-      if(c>=61&&c<=67) return {e:'🌧️',t:'Regen'};
-      if(c>=71&&c<=77) return {e:'🌨️',t:'Schnee'};
-      if(c>=80&&c<=82) return {e:'🌦️',t:'Regenschauer'};
-      if(c>=95) return {e:'⛈️',t:'Gewitter'};
-      return {e:'🌡️',t:'Wechselhaft'};
     }
     function fallback(){
-      emoji.textContent='🗓️';
-      temp.textContent='Höchsttemperatur ca. 20°  ·  Tiefsttemperatur ca. 11°';
-      desc.textContent='Typisch mild für Mitte September';
+      emoji.textContent='\ud83d\uddd3\ufe0f';
+      temp.textContent='Vorhersage noch nicht verf\u00fcgbar';
+      desc.textContent='Erscheint automatisch, sobald der Tag n\u00e4her r\u00fcckt';
       rain.textContent='';
-      meta.textContent='Die echte Vorhersage – auch ob es regnet – erscheint hier automatisch, sobald der Tag in Reichweite ist (ca. 2 Wochen vorher).';
+      meta.textContent='Die echte Vorhersage \u2013 auch ob es regnet \u2013 erscheint hier automatisch, sobald der Tag in Reichweite ist (ca. 2 Wochen vorher).';
     }
-    var url='https://api.open-meteo.com/v1/forecast?latitude=48.2082&longitude=16.3738&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FVienna&start_date=2026-09-17&end_date=2026-09-17';
-    fetch(url).then(function(r){return r.json();}).then(function(d){
-      if(d&&d.daily&&d.daily.temperature_2m_max&&d.daily.temperature_2m_max[0]!=null){
-        var w=wmo(d.daily.weather_code[0]);
-        var hi=Math.round(d.daily.temperature_2m_max[0]),lo=Math.round(d.daily.temperature_2m_min[0]);
-        emoji.textContent=w.e;
-        temp.textContent='Höchsttemperatur '+hi+'°  ·  Tiefsttemperatur '+lo+'°';
-        desc.textContent=w.t;
-        var pop=d.daily.precipitation_probability_max?d.daily.precipitation_probability_max[0]:null;
-        if(pop==null){rain.textContent='';}
-        else if(pop>=60){rain.textContent='☔ Regen wahrscheinlich ('+pop+'%)';rain.style.color='#3B82F6';}
-        else if(pop>=25){rain.textContent='🌦️ Schauer möglich ('+pop+'%)';rain.style.color='#F4A81D';}
-        else {rain.textContent='🌂 Voraussichtlich trocken ('+pop+'%)';rain.style.color='#16C79A';}
-        if(window.setWeatherFX){var cc=d.daily.weather_code[0];window.setWeatherFX((cc===0||cc===1||cc===2)?'sun':(cc>=71&&cc<=77)?'snow':((cc>=51&&cc<=67)||(cc>=80&&cc<=82)||cc>=95)?'rain':'cloud');}
-        meta.textContent='Aktuelle Vorhersage · Open-Meteo';
-      } else { fallback(); }
-    }).catch(fallback);
+    function applyDate(dateStr){
+      var url='https://api.open-meteo.com/v1/forecast?latitude=48.2082&longitude=16.3738&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FVienna&start_date='+dateStr+'&end_date='+dateStr;
+      fetch(url).then(function(r){return r.json();}).then(function(d){
+        if(d&&d.daily&&d.daily.temperature_2m_max&&d.daily.temperature_2m_max[0]!=null){
+          var w=wmo(d.daily.weather_code[0]);
+          var hi=Math.round(d.daily.temperature_2m_max[0]),lo=Math.round(d.daily.temperature_2m_min[0]);
+          emoji.textContent=w.e;
+          temp.textContent='H\u00f6chsttemperatur '+hi+'\u00b0  \u00b7  Tiefsttemperatur '+lo+'\u00b0';
+          desc.textContent=w.t;
+          var pop=d.daily.precipitation_probability_max?d.daily.precipitation_probability_max[0]:null;
+          if(pop==null){rain.textContent='';}
+          else if(pop>=60){rain.textContent='\u2614 Regen wahrscheinlich ('+pop+'%)';rain.style.color='#3B82F6';}
+          else if(pop>=25){rain.textContent='\ud83c\udf26\ufe0f Schauer m\u00f6glich ('+pop+'%)';rain.style.color='#F4A81D';}
+          else {rain.textContent='\ud83c\udf02 Voraussichtlich trocken ('+pop+'%)';rain.style.color='#16C79A';}
+          if(window.setWeatherFX){var cc=d.daily.weather_code[0];window.setWeatherFX((cc===0||cc===1||cc===2)?'sun':(cc>=71&&cc<=77)?'snow':((cc>=51&&cc<=67)||(cc>=80&&cc<=82)||cc>=95)?'rain':'cloud');}
+          meta.textContent='Aktuelle Vorhersage \u00b7 Open-Meteo';
+        } else { fallback(); }
+      }).catch(fallback);
+    }
+    waiting();
+    window.tbtRegisterDateHandler(applyDate);
   })();
 
   // Interactive map
@@ -1352,9 +1393,10 @@ Christian L.</textarea>
   })();
 </script>
 <script>
-  // PWA: Service-Worker registrieren (Offline-Fähigkeit + Installierbarkeit)
+  // Service-Worker deaktiviert: sw.js raeumt alten Cache auf und meldet sich selbst ab.
+  // Keine Neu-Registrierung mehr, damit sich nichts wieder einnistet.
   if('serviceWorker' in navigator){
-    window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+    navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.update(); }); }).catch(function(){});
   }
 </script>
 <script>
@@ -1415,6 +1457,8 @@ Christian L.</textarea>
       var anyVote=S.some(function(x){return x.yes>0||x.no>0;});
       if(confirmed.length){
         summary.innerHTML='✅ Passt für <span class="hl">alle</span>: <span class="hl">'+confirmed.join(', ')+'</span>';
+        var firstConfirmed=DATES.filter(function(d,i){return allYes[i];})[0];
+        if(firstConfirmed && window.tbtConfirmEventDate) window.tbtConfirmEventDate(firstConfirmed.d);
       } else if(!anyVote){
         summary.innerHTML='Noch keine Stimmen – wähle oben deinen Namen und trag ein, wann du kannst.';
       } else {
