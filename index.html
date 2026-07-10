@@ -412,6 +412,44 @@
     .wfx .sun,.wfx .sun::before,.wfx .cloud,.wfx .drop,.wfx .flake,.thanks-emoji,.dvd{animation:none !important;}
     ::view-transition-new(root){animation:none !important;}
   }
+  /* ===================== MINI-GAME: Zielschiessen ===================== */
+  .game-sub{color:var(--muted);margin:2px 0 16px;}
+  .game-hud{display:flex;gap:10px;margin-bottom:12px;}
+  .hud-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px 8px;box-shadow:var(--shadow);}
+  .hud-label{font-family:"JetBrains Mono",monospace;font-size:.64rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);}
+  .hud-val{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;line-height:1;}
+  #gScore{color:color-mix(in srgb,var(--c-laser) 62%, var(--ink));}
+  .game-arena{position:relative;height:340px;border-radius:var(--radius);border:1.5px solid var(--line);overflow:hidden;box-shadow:var(--shadow);background:radial-gradient(120% 90% at 50% 0%, color-mix(in srgb,var(--primary) 8%, var(--surface)), var(--surface) 62%);touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+  .game-arena::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.3;background:
+    repeating-linear-gradient(0deg,transparent 0 26px, color-mix(in srgb,var(--line) 60%, transparent) 26px 27px),
+    repeating-linear-gradient(90deg,transparent 0 26px, color-mix(in srgb,var(--line) 60%, transparent) 26px 27px);}
+  .game-target{position:absolute;width:54px;height:54px;display:grid;place-items:center;font-size:2rem;cursor:pointer;border:none;background:none;padding:0;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.25));animation:tgtPop .16s ease-out both;z-index:2;-webkit-tap-highlight-color:transparent;}
+  @keyframes tgtPop{from{transform:scale(0);}to{transform:scale(1);}}
+  .game-target.leaving{animation:tgtOut .18s ease-in forwards;}
+  @keyframes tgtOut{to{transform:scale(0);opacity:0;}}
+  .game-float{position:absolute;font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.15rem;pointer-events:none;z-index:3;animation:floatUp .7s ease-out forwards;}
+  @keyframes floatUp{from{transform:translateY(0);opacity:1;}to{transform:translateY(-34px);opacity:0;}}
+  .game-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:color-mix(in srgb,var(--surface) 80%, transparent);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:5;text-align:center;padding:20px;}
+  .game-overlay.hidden{display:none;}
+  .game-over-title{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;}
+  .game-over-sub{color:var(--muted);margin-top:-6px;}
+  .game-start{margin:0;}
+  .game-foot{display:flex;flex-direction:column;gap:6px;margin-top:14px;}
+  #gName{width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;color:var(--ink);font-family:"Nunito",sans-serif;font-size:1rem;padding:11px 14px;outline:none;}
+  #gName:focus{border-color:var(--primary);}
+  .game-hint{font-size:.8rem;color:var(--muted);}
+  .lb2{margin-top:18px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+  .lb2-head{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.15rem;display:flex;align-items:center;gap:8px;}
+  .lb2-status{font-family:"JetBrains Mono",monospace;font-size:.7rem;color:var(--muted);font-weight:400;}
+  .lb2-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:7px;}
+  .lb2-list li{display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--primary) 4%, var(--surface));border:1px solid var(--line);border-radius:11px;padding:8px 12px;font-weight:700;}
+  .lb2-list li .rank{font-family:"JetBrains Mono",monospace;color:var(--muted);width:28px;text-align:center;}
+  .lb2-list li .who{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .lb2-list li .pts{font-family:"Fredoka",sans-serif;color:color-mix(in srgb,var(--c-laser) 62%, var(--ink));}
+  .lb2-list li.me{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 12%, var(--surface));}
+  .lb2-list li.top1{border-color:var(--c-breakfast);}
+  .lb2-empty{justify-content:center;color:var(--muted);font-weight:400;}
+  @media (prefers-reduced-motion:reduce){ .game-target,.game-target.leaving,.game-float{animation:none;} }
 </style>
 </head>
 <body>
@@ -426,6 +464,7 @@
           <a data-scroll="teams" role="button" tabindex="0">Teams</a>
           <a data-scroll="karte" role="button" tabindex="0">Karte</a>
           <a data-scroll="fotos" role="button" tabindex="0">Fotos</a>
+          <a data-scroll="spiel" role="button" tabindex="0">Spiel</a>
         </div>
         <button class="theme-btn" id="themeBtn" aria-label="Dunkelmodus umschalten"><span id="themeIcon">🌙</span></button>
       </div>
@@ -621,6 +660,31 @@ Christian L.</textarea>
       <div id="voteLead" class="vote-lead" style="display:none"></div>
       <div class="gal-grid" id="galGrid"></div>
       <p class="gal-empty" id="galEmpty">Noch keine Fotos – macht das erste Bild vom Team-Tag! 📸</p>
+    </section>
+
+    <section id="spiel" class="reveal">
+      <div class="sec-head"><h2>Zielschießen 🎯</h2><span class="count">// Mini-Game</span></div>
+      <p class="game-sub">Triff in 30 Sekunden so viele Zielscheiben wie möglich! 🎯 gibt Punkte, 💫 und 🔴 extra viel – aber Finger weg von ⭐ und 💣, die geben Abzug.</p>
+      <div class="game-hud">
+        <div class="hud-item"><span class="hud-label">Punkte</span><span class="hud-val" id="gScore">0</span></div>
+        <div class="hud-item"><span class="hud-label">Zeit</span><span class="hud-val" id="gTime">30</span></div>
+        <div class="hud-item"><span class="hud-label">Dein Rekord</span><span class="hud-val" id="gBest">–</span></div>
+      </div>
+      <div class="game-arena" id="gArena">
+        <div class="game-overlay" id="gOverlay">
+          <div class="game-over-title" id="gOverTitle">Bereit? 🎯</div>
+          <div class="game-over-sub" id="gOverSub">Triff die Zielscheiben, meide ⭐ und 💣.</div>
+          <button class="draw-btn game-start" id="gStart"><span>▶</span> Start</button>
+        </div>
+      </div>
+      <div class="game-foot">
+        <input id="gName" maxlength="18" placeholder="Dein Name für die Bestenliste" autocomplete="off" spellcheck="false">
+        <div class="game-hint">Dein bester Lauf kommt automatisch in die geteilte Bestenliste. 🏆</div>
+      </div>
+      <div class="lb2">
+        <div class="lb2-head">🏆 Bestenliste <span class="lb2-status" id="lbStatus"></span></div>
+        <ol class="lb2-list" id="lbList"><li class="lb2-empty">Lade …</li></ol>
+      </div>
     </section>
 
     <section id="konami" class="konami reveal">
@@ -1643,6 +1707,136 @@ Christian L.</textarea>
         if(clicks>=5){ clicks=0; emojiRain('🎯',22); if(window.tbtToast) window.tbtToast('🎯 Volltreffer!'); }
       });
     }
+  })();
+</script>
+<script>
+  // ---------- Mini-Game: Zielschiessen + geteilte Bestenliste (Supabase) ----------
+  (function(){
+    var arena=document.getElementById('gArena'); if(!arena) return;
+    var scoreEl=document.getElementById('gScore'),timeEl=document.getElementById('gTime'),bestEl=document.getElementById('gBest');
+    var overlay=document.getElementById('gOverlay'),overTitle=document.getElementById('gOverTitle'),overSub=document.getElementById('gOverSub'),startBtn=document.getElementById('gStart');
+    var nameInput=document.getElementById('gName'),lbList=document.getElementById('lbList'),lbStatus=document.getElementById('lbStatus');
+    var rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var CFG=window.TBT_CLOUD||{},BUCKET=CFG.bucket||'Fotos',FOLDER='highscore',cloud=null;
+    try{ cloud=(CFG.url&&CFG.anonKey&&window.supabase)?window.supabase.createClient(CFG.url,CFG.anonKey):null; }catch(e){ cloud=null; }
+
+    // Name vorbefuellen (aus Terminabstimmung, sonst gespeicherter Name)
+    try{
+      var sel=document.getElementById('terminMe');
+      if(sel&&sel.value){ var o=sel.options[sel.selectedIndex]; if(o) nameInput.value=o.textContent.trim(); }
+      var saved=localStorage.getItem('tbt_game_name'); if(saved&&!nameInput.value) nameInput.value=saved;
+    }catch(e){}
+
+    var myBest=0; try{ myBest=parseInt(localStorage.getItem('tbt_game_best')||'0',10)||0; }catch(e){}
+    bestEl.textContent=myBest||'–';
+
+    var TYPES=[
+      {e:'🎯',w:56,pts:1},
+      {e:'💫',w:12,pts:3},
+      {e:'🔴',w:10,pts:2},
+      {e:'⭐',w:13,pts:-2},
+      {e:'💣',w:9,pts:-3}
+    ];
+    var totalW=0; TYPES.forEach(function(t){ totalW+=t.w; });
+    function pick(){ var r=Math.random()*totalW,acc=0; for(var i=0;i<TYPES.length;i++){acc+=TYPES[i].w; if(r<acc) return TYPES[i];} return TYPES[0]; }
+
+    var playing=false,score=0,timeLeft=30,tick=null,spawnTimer=null;
+    function setScore(v){ score=v<0?0:v; scoreEl.textContent=score; }
+    function floatText(x,y,txt,pos){
+      var f=document.createElement('div'); f.className='game-float'; f.textContent=txt;
+      f.style.left=x+'px'; f.style.top=y+'px';
+      f.style.color = pos>0 ? 'color-mix(in srgb,var(--c-lunch) 70%, var(--ink))' : 'color-mix(in srgb,var(--c-laser) 75%, var(--ink))';
+      arena.appendChild(f); setTimeout(function(){ if(f.parentNode) f.parentNode.removeChild(f); },700);
+    }
+    function spawnOne(){
+      if(!playing) return;
+      var t=pick(),size=54,W=arena.clientWidth,H=arena.clientHeight;
+      var x=Math.random()*(W-size),y=Math.random()*(H-size);
+      var b=document.createElement('button'); b.className='game-target'; b.type='button'; b.textContent=t.e;
+      b.style.left=x+'px'; b.style.top=y+'px';
+      var life=Math.max(650,1200-(30-timeLeft)*16),killed=false;
+      function kill(){ if(killed)return; killed=true; b.classList.add('leaving'); setTimeout(function(){ if(b.parentNode)b.parentNode.removeChild(b); },180); }
+      var lifeT=setTimeout(kill,life);
+      b.addEventListener('click',function(){
+        if(killed||!playing) return;
+        clearTimeout(lifeT);
+        setScore(score+t.pts);
+        floatText(x,y,(t.pts>0?'+':'')+t.pts,t.pts);
+        kill();
+      });
+      arena.appendChild(b);
+    }
+    function scheduleSpawn(){
+      if(!playing) return;
+      spawnOne();
+      var gap=Math.max(360,720-(30-timeLeft)*13);
+      spawnTimer=setTimeout(scheduleSpawn,gap);
+    }
+    function clearTargets(){ [].slice.call(arena.querySelectorAll('.game-target,.game-float')).forEach(function(el){ if(el.parentNode)el.parentNode.removeChild(el); }); }
+
+    function endGame(){
+      playing=false; clearTimeout(tick); clearTimeout(spawnTimer); clearTargets();
+      var isRecord=score>myBest;
+      if(isRecord){ myBest=score; try{ localStorage.setItem('tbt_game_best',String(myBest)); }catch(e){} bestEl.textContent=myBest; }
+      overTitle.textContent = score>0 ? ('🎯 '+score+' Punkte!') : 'Uff, 0 Punkte 😅';
+      overSub.textContent = (isRecord&&score>0) ? 'Neuer persönlicher Rekord! 🎉' : 'Nochmal?';
+      startBtn.innerHTML='<span>↻</span> Nochmal';
+      overlay.classList.remove('hidden');
+      if(score>0&&isRecord&&!rm&&window.tbtConfetti) window.tbtConfetti();
+      submitScore(score);
+    }
+    function startGame(){
+      setScore(0); timeLeft=30; timeEl.textContent=timeLeft; playing=true;
+      overlay.classList.add('hidden'); clearTargets();
+      var nm=(nameInput.value||'').trim(); if(nm){ try{ localStorage.setItem('tbt_game_name',nm); }catch(e){} }
+      scheduleSpawn();
+      tick=setInterval(function(){
+        timeLeft--; timeEl.textContent=timeLeft<0?0:timeLeft;
+        if(timeLeft<=0){ clearInterval(tick); endGame(); }
+      },1000);
+    }
+    startBtn.addEventListener('click',startGame);
+
+    // ---- Bestenliste (Supabase) ----
+    function safeName(n){ return (n||'anon').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'anon'; }
+    function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+    function submitScore(sc){
+      if(!cloud){ return; }
+      var nm=(nameInput.value||'').trim(); if(!nm){ loadBoard(); return; }
+      var path=FOLDER+'/'+safeName(nm)+'.json';
+      cloud.storage.from(BUCKET).download(path).then(function(dl){ return (dl&&dl.data)?dl.data.text():null; }).catch(function(){ return null; })
+      .then(function(txt){
+        var prev=0; if(txt){ try{ prev=JSON.parse(txt).score||0; }catch(e){} }
+        if(sc<=prev){ loadBoard(); return null; }
+        var payload=JSON.stringify({name:nm,score:sc,ts:new Date().toISOString()});
+        return cloud.storage.from(BUCKET).upload(path,new Blob([payload],{type:'application/json'}),{upsert:true,contentType:'application/json'});
+      }).then(function(){ loadBoard(); }).catch(function(){ loadBoard(); });
+    }
+    function loadBoard(){
+      if(!cloud){ lbList.innerHTML='<li class="lb2-empty">Bestenliste braucht die Cloud-Verbindung</li>'; return; }
+      if(lbStatus) lbStatus.textContent='lädt …';
+      cloud.storage.from(BUCKET).list(FOLDER,{limit:200}).then(function(res){
+        var files=((res&&res.data)||[]).filter(function(o){ return o.id&&/\.json$/.test(o.name); });
+        return Promise.all(files.map(function(f){
+          return cloud.storage.from(BUCKET).download(FOLDER+'/'+f.name).then(function(dl){ return (dl&&dl.data)?dl.data.text():null; }).then(function(t){ try{ return JSON.parse(t); }catch(e){ return null; } }).catch(function(){ return null; });
+        }));
+      }).then(function(rows){
+        rows=(rows||[]).filter(function(r){ return r&&typeof r.score==='number'; });
+        rows.sort(function(a,b){ return b.score-a.score; });
+        rows=rows.slice(0,10);
+        if(lbStatus) lbStatus.textContent='';
+        if(!rows.length){ lbList.innerHTML='<li class="lb2-empty">Noch keine Einträge – sei die/der Erste! 🎯</li>'; return; }
+        var myNm=(nameInput.value||'').trim().toLowerCase();
+        var medals=['🥇','🥈','🥉'];
+        lbList.innerHTML=rows.map(function(r,i){
+          var cls='lb2-item'+(i===0?' top1':'')+((r.name||'').toLowerCase()===myNm&&myNm?' me':'');
+          var rank=medals[i]||('#'+(i+1));
+          return '<li class="'+cls+'"><span class="rank">'+rank+'</span><span class="who">'+esc(r.name||'—')+'</span><span class="pts">'+r.score+'</span></li>';
+        }).join('');
+      }).catch(function(){ if(lbStatus) lbStatus.textContent=''; lbList.innerHTML='<li class="lb2-empty">Bestenliste konnte nicht geladen werden</li>'; });
+    }
+    loadBoard();
   })();
 </script>
 </body>
