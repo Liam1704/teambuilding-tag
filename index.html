@@ -297,6 +297,48 @@
   html.laser-red body{background:#E11D48;}
   html.laser-blue body{background:#3B4CDB;}
   html.laser-red body::before,html.laser-blue body::before{opacity:0;}
+  /* Lesbarkeit: sobald die Team-Farbe den Hintergrund fuellt, Text auf dem Hintergrund hell faerben */
+html.laser-red h1.title,
+  html.laser-blue h1.title,
+  html.laser-red .tagline,
+  html.laser-blue .tagline,
+  html.laser-red .sec-head h2,
+  html.laser-blue .sec-head h2,
+  html.laser-red .sec-head .count,
+  html.laser-blue .sec-head .count,
+  html.laser-red .poll-intro,
+  html.laser-blue .poll-intro,
+  html.laser-red .me-pick label,
+  html.laser-blue .me-pick label,
+  html.laser-red .poll-summary,
+  html.laser-blue .poll-summary,
+  html.laser-red .poll-note,
+  html.laser-blue .poll-note,
+  html.laser-red .mapsec-sub,
+  html.laser-blue .mapsec-sub,
+  html.laser-red .loc-info,
+  html.laser-blue .loc-info,
+  html.laser-red .vote-lead,
+  html.laser-blue .vote-lead,
+  html.laser-red .gal-empty,
+  html.laser-blue .gal-empty,
+  html.laser-red .game-sub,
+  html.laser-blue .game-sub,
+  html.laser-red .game-hint,
+  html.laser-blue .game-hint,
+  html.laser-red .draw-eyebrow,
+  html.laser-blue .draw-eyebrow,
+  html.laser-red .kmsg,
+  html.laser-blue .kmsg,
+  html.laser-red .kseq,
+  html.laser-blue .kseq,
+  html.laser-red footer,
+  html.laser-blue footer,
+  html.laser-red footer .ver,
+  html.laser-blue footer .ver{color:#fff !important;text-shadow:0 1px 2px rgba(0,0,0,.28);}
+  html.laser-red h1.title .pop, html.laser-blue h1.title .pop{background:none;-webkit-text-fill-color:#fff;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.3);}
+  html.laser-red .eyebrow, html.laser-blue .eyebrow{background:rgba(255,255,255,.22);color:#fff;}
+  html.laser-red .poll-summary .hl, html.laser-blue .poll-summary .hl{color:#FFDE8A !important;}
   .stop-done-ov{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border-radius:var(--radius);z-index:4;backdrop-filter:blur(3px) saturate(.9);-webkit-backdrop-filter:blur(3px) saturate(.9);background:color-mix(in srgb,var(--surface) 55%, transparent);}
   .stop.is-past .stop-done-ov{display:flex;}
   .stop.is-past .stop-card{opacity:1;}
@@ -1137,23 +1179,36 @@ Christian L.</textarea>
     if(meSel) meSel.addEventListener('change',function(){ if(lastRed) saveTeam(lastRed,lastBlue); });
   })();
 
-  // ---------- Team-Farbe als Seiten-Hintergrund (bleibt bis zum Schliessen der Seite) ----------
+  // ---------- Team-Farbe als Seiten-Hintergrund (nur im Event-Fenster, ab 15 Min vor Start) ----------
   (function(){
     var root=document.documentElement;
+    var TIME_START='09:00:00+02:00',TIME_END='13:00:00+02:00',PRE=15*60000;
+    var qp=new URLSearchParams(location.search),STATE=qp.get('state'),FORCE=qp.get('laser');
     function myTeam(){ try{ return sessionStorage.getItem('tbt_myteam')||null; }catch(e){ return null; } }
-    function want(){
-      var force=(new URLSearchParams(location.search)).get('laser');
-      if(force==='red'||force==='blue') return force;
+    function team(){
+      if(FORCE==='red'||FORCE==='blue') return FORCE;
       return myTeam();
     }
+    // Nur waehrend des Events (ab 15 Min vor Start bis zum Ende). ?laser= oder ?state= erzwingt Vorschau.
+    function withinWindow(){
+      if(FORCE==='red'||FORCE==='blue') return true;
+      if(STATE==='now'||STATE==='done') return true;
+      var d=window.__tbtDate; if(!d) return false;
+      var start=new Date(d+'T'+TIME_START).getTime();
+      var end=new Date(d+'T'+TIME_END).getTime();
+      var now=Date.now();
+      return now>=(start-PRE) && now<=end;
+    }
     function apply(){
-      var t=want();
+      var t=team(),on=t&&withinWindow();
       root.classList.remove('laser-red','laser-blue');
-      if(t==='red') root.classList.add('laser-red');
-      else if(t==='blue') root.classList.add('laser-blue');
+      if(on&&t==='red') root.classList.add('laser-red');
+      else if(on&&t==='blue') root.classList.add('laser-blue');
     }
     window.tbtCheckLaserBg=apply;
     apply();
+    setInterval(apply,30000); // schaltet automatisch scharf, sobald das Fenster beginnt
+    if(window.tbtRegisterDateHandler) window.tbtRegisterDateHandler(function(){ apply(); });
   })();
 
   // ---------- Completed-stop overlays (blurred "Erledigt" badge) ----------
