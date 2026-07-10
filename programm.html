@@ -2,55 +2,174 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Programm Team-Building-Tag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#5C94FC; --ground:#C8702A; --ground2:#8A4B1B; --grass:#3EA037; --grass2:#2C7A28;
+    --coin:#FBD000; --block:#E39B2A; --ink:#1a1a2e; --red:#FF4B5C;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{font-family:"Press Start 2P",system-ui,monospace;background:var(--sky);color:#fff;line-height:1.7;overflow-x:hidden;}
+  img{image-rendering:pixelated;}
+  a{color:inherit;}
+
+  /* HERO / Level-Banner */
+  .hero{position:relative;width:100%;line-height:0;border-bottom:6px solid #000;}
+  .hero img{width:100%;height:auto;display:block;}
+  .hero .press{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);
+    font-size:clamp(.5rem,2vw,.95rem);color:#fff;text-shadow:2px 2px 0 #000;
+    animation:blink 1s steps(1) infinite;white-space:nowrap;}
+  @keyframes blink{50%{opacity:0;}}
+
+  .wrap{max-width:820px;margin:0 auto;padding:22px 16px 0;}
+
+  h1.title{font-size:clamp(1rem,4.6vw,2rem);text-align:center;margin:16px 0 8px;
+    color:var(--coin);text-shadow:3px 3px 0 #000,-1px -1px 0 #000;letter-spacing:1px;line-height:1.5;}
+  .subtitle{text-align:center;font-size:clamp(.5rem,2.1vw,.78rem);color:#fff;text-shadow:2px 2px 0 #000;margin:0 0 8px;}
+  .subtitle .heart{color:var(--red);}
+  .coins{text-align:center;font-size:1.3rem;margin:8px 0;letter-spacing:8px;}
+
+  .section-label{display:inline-block;font-size:.75rem;background:#000;color:var(--coin);
+    padding:8px 12px;border:3px solid var(--coin);margin:28px 0 16px;box-shadow:4px 4px 0 rgba(0,0,0,.35);}
+
+  /* SPIELERAUSWAHL */
+  .players{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .player{background:#fff;border:4px solid #000;box-shadow:6px 6px 0 rgba(0,0,0,.4);
+    padding:10px 8px 12px;text-align:center;color:var(--ink);transition:transform .1s;}
+  .player:hover{transform:translateY(-4px);}
+  .player img{width:100%;max-width:150px;height:auto;margin:0 auto;display:block;}
+  .player .pname{font-size:.62rem;margin:10px 0 8px;color:#000;}
+  .player .pstat{font-size:.5rem;color:#3a3a5a;line-height:2.1;}
+
+  /* LEVEL-LISTE */
+  .levels{list-style:none;padding:0;margin:0;display:grid;gap:10px;}
+  .level{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.55);
+    border:3px solid #000;border-left:8px solid var(--coin);padding:12px 14px;
+    font-size:.62rem;box-shadow:4px 4px 0 rgba(0,0,0,.3);}
+  .level .lv{color:var(--coin);white-space:nowrap;}
+  .level .lt{color:#fff;}
+  .level .lc{margin-left:auto;color:var(--coin);white-space:nowrap;font-size:.7rem;}
+
+  /* INFOBOX */
+  .infobox{background:rgba(0,0,0,.55);border:3px solid #000;padding:16px;
+    font-size:.56rem;line-height:2.2;box-shadow:4px 4px 0 rgba(0,0,0,.3);}
+  .infobox b{color:var(--coin);}
+  .infobox ul{margin:10px 0 0;padding-left:18px;}
+  .infobox li{margin-bottom:10px;}
+
+  /* START */
+  .start-btn{display:block;width:100%;max-width:320px;margin:30px auto 6px;text-align:center;
+    font-family:inherit;font-size:.95rem;color:#fff;background:var(--grass);border:4px solid #000;
+    padding:16px;box-shadow:6px 6px 0 rgba(0,0,0,.45);text-decoration:none;cursor:pointer;
+    animation:bob 1.2s ease-in-out infinite;}
+  .start-btn:active{transform:translate(3px,3px);box-shadow:3px 3px 0 rgba(0,0,0,.45);}
+  @keyframes bob{50%{transform:translateY(-4px);}}
+  .loadwrap{max-width:320px;margin:6px auto 0;display:none;}
+  .loadwrap.on{display:block;}
+  .loadbar{height:22px;border:4px solid #000;background:#000;padding:2px;box-shadow:4px 4px 0 rgba(0,0,0,.4);}
+  .loadbar > div{height:100%;width:0;background:var(--coin);transition:width 1.6s steps(12);}
+  .loadmsg{font-size:.55rem;text-align:center;margin-top:10px;color:#fff;text-shadow:2px 2px 0 #000;min-height:1.4em;}
+
+  /* GROUND + FOOTER */
+  .ground{margin-top:32px;height:64px;border-top:4px solid #000;
+    background:linear-gradient(#3EA037 0 14px,#2C7A28 14px 22px,#C8702A 22px 100%);}
+  footer{background:var(--ground2);text-align:center;font-size:.5rem;padding:18px 12px 28px;color:#ffe;line-height:2;}
+  footer .reveal{display:inline-block;margin-top:28px;font-size:8px;color:#9a6b3f;text-decoration:none;}
+
+  @media (max-width:520px){
+    .players{grid-template-columns:1fr;}
+    .player img{max-width:190px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none !important;} }
+</style>
 </head>
 <body>
 
-<h1>Team-Building-Tag</h1>
-<h2>IT-Abteilung</h2>
+  <div class="hero">
+    <img src="bg-level.png" alt="Team-Building-Tag – Level 1">
+    <div class="press">&#9654; PRESS START &#9664;</div>
+  </div>
 
-<hr>
+  <div class="wrap">
+    <h1 class="title">TEAM-BUILDING-TAG</h1>
+    <div class="subtitle">IT-ABTEILUNG &middot; KAMMER F&Uuml;R &Auml;RZT:INNEN WIEN <span class="heart">&#9829; &#9829; &#9829;</span></div>
+    <div class="coins">🪙 🪙 🪙</div>
 
-<p>Sehr geehrte Kolleginnen und Kollegen,</p>
+    <span class="section-label">&#9654; SPIELERAUSWAHL</span>
+    <div class="players">
+      <div class="player">
+        <img src="mascot-nerd.png" alt="Der Nerd">
+        <div class="pname">DER NERD</div>
+        <div class="pstat">Kaffee &#9733;&#9733;&#9733;&#9733;&#9733;<br>Bugfix &#9733;&#9733;&#9733;&#9733;&#9734;<br>Schlaf &#9733;&#9734;&#9734;&#9734;&#9734;</div>
+      </div>
+      <div class="player">
+        <img src="mascot-pate.png" alt="Der Pate">
+        <div class="pname">DER PATE</div>
+        <div class="pstat">Budget &#9733;&#9733;&#9733;&#9733;&#9733;<br>Deadlines &#9733;&#9733;&#9733;&#9734;&#9734;<br>Style &#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      </div>
+      <div class="player">
+        <img src="mascot-raeuber.png" alt="Der Sammler">
+        <div class="pname">DER SAMMLER</div>
+        <div class="pstat">M&uuml;nzen &#9733;&#9733;&#9733;&#9733;&#9733;<br>Tempo &#9733;&#9733;&#9733;&#9733;&#9734;<br>Tarnung &#9733;&#9733;&#9733;&#9734;&#9734;</div>
+      </div>
+    </div>
 
-<p>nachfolgend finden Sie das vorl&auml;ufige Programm f&uuml;r den geplanten
-Team-Building-Tag. &Auml;nderungen vorbehalten. Bei R&uuml;ckfragen wenden Sie
-sich bitte an die zust&auml;ndige Stelle.</p>
+    <span class="section-label">&#9654; LEVEL-&Uuml;BERSICHT</span>
+    <ul class="levels">
+      <li class="level"><span class="lv">1-1</span><span class="lt">Fr&uuml;hst&uuml;ck</span><span class="lc">09:00 🪙</span></li>
+      <li class="level"><span class="lv">1-2</span><span class="lt">Lasertag &mdash; BOSS-KAMPF</span><span class="lc">10:45 🎯</span></li>
+      <li class="level"><span class="lv">1-3</span><span class="lt">Mittagessen</span><span class="lc">13:15 🍝</span></li>
+      <li class="level"><span class="lv">1-4</span><span class="lt">Freier Nachmittag</span><span class="lc">15:00 🌟</span></li>
+      <li class="level"><span class="lv">1-5</span><span class="lt">Abendessen</span><span class="lc">18:00 🏁</span></li>
+    </ul>
 
-<p>Programm&uuml;bersicht:</p>
+    <span class="section-label">&#9654; SPIELREGELN</span>
+    <div class="infobox">
+      <b>ACHTUNG, SPIELER:IN!</b>
+      <ul>
+        <li>Teilnahme freiwillig &mdash; Extra-Leben gibt&#39;s nur beim Kommen.</li>
+        <li>Anreise selbstst&auml;ndig, am besten per Warp-Pipe (&Ouml;ffis).</li>
+        <li>GAME OVER droht bei zu wenig Kaffee.</li>
+        <li>Der Highscore wird am Abend feierlich ausgewertet.</li>
+        <li>&Auml;nderungen vorbehalten. CONTINUE? &#9654; JA / NEIN</li>
+      </ul>
+    </div>
 
-<table border="1" cellpadding="6" cellspacing="0">
-  <tr>
-    <th align="left">Uhrzeit</th>
-    <th align="left">Programmpunkt</th>
-  </tr>
-  <tr><td>09:00 - 10:15 Uhr</td><td>Fr&uuml;hst&uuml;ck</td></tr>
-  <tr><td>10:45 - 12:45 Uhr</td><td>Lasertag</td></tr>
-  <tr><td>13:15 - 14:45 Uhr</td><td>Mittagessen</td></tr>
-  <tr><td>ab 15:00 Uhr</td><td>Freier Nachmittag</td></tr>
-  <tr><td>18:00 - 19:45 Uhr</td><td>Abendessen</td></tr>
-</table>
+    <a class="start-btn" id="startBtn" href="#" role="button">&#9654; START</a>
+    <div class="loadwrap" id="loadWrap">
+      <div class="loadbar"><div id="loadFill"></div></div>
+      <div class="loadmsg" id="loadMsg"></div>
+    </div>
+    <div class="coins">🪙 🪙 🪙 🪙 🪙</div>
+  </div>
 
-<br>
+  <div class="ground"></div>
+  <footer>
+    Rundschreiben Nr.&nbsp;1 &middot; IT-Abteilung &middot; Version 2.0 &mdash; 8-BIT EDITION
+    <br>
+    <a class="reveal" href="index.html">weiter</a>
+  </footer>
 
-<p><b>Hinweise:</b></p>
-<ul>
-  <li>Teilnahme freiwillig.</li>
-  <li>Anreise selbst&auml;ndig zu organisieren.</li>
-  <li>Programm&auml;nderungen vorbehalten.</li>
-  <li>Weitere Informationen folgen zu einem sp&auml;teren Zeitpunkt.</li>
-</ul>
-
-<hr>
-
-<p><small>Dieses Dokument dient ausschlie&szlig;lich zu Informationszwecken.
-Stand: aktuell. Version 1.0.</small></p>
-
-<p>Ende des Dokuments.</p>
-
-<br><br><br><br><br><br><br><br>
-
-<p><a href="index.html" style="font-size:9px;color:#cccccc;text-decoration:none">weiter</a></p>
-
+<script>
+  (function(){
+    var btn=document.getElementById('startBtn'),wrap=document.getElementById('loadWrap'),
+        fill=document.getElementById('loadFill'),msg=document.getElementById('loadMsg');
+    if(!btn) return;
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      wrap.classList.add('on');
+      msg.textContent='LOADING …';
+      fill.style.width='0';
+      requestAnimationFrame(function(){ fill.style.width='100%'; });
+      setTimeout(function(){ msg.textContent='\u26A0 SYSTEM \u00DCBERLASTET: zu viel Teamgeist!'; },1700);
+      setTimeout(function(){ msg.textContent='Bitte echten Menschen fragen. \uD83D\uDE04'; },3200);
+    });
+  })();
+</script>
 </body>
 </html>
