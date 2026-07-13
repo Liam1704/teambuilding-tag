@@ -1134,14 +1134,27 @@ Christian L.</textarea>
       var lastWalkKey='';
 
       // Zeitplan aus der Timeline lesen (index-gleich zur stops-Liste)
+      // Uhrzeiten getrennt merken, damit wir sie auf den bestätigten Termin umrechnen können.
+      var EVENT_DATE=null,arrivedMax=-1;
       var sched=[].map.call(document.querySelectorAll('#ablauf .timeline .stop'),function(el){
-        return {name:el.getAttribute('data-name'),start:new Date(el.getAttribute('data-start')).getTime(),end:new Date(el.getAttribute('data-end')).getTime()};
+        var ds=el.getAttribute('data-start')||'',de=el.getAttribute('data-end')||'';
+        return {name:el.getAttribute('data-name'),st:(ds.split('T')[1]||'09:00:00+02:00'),et:(de.split('T')[1]||'10:00:00+02:00'),rawStart:new Date(ds).getTime(),rawEnd:new Date(de).getTime()};
       });
+      function sAt(i){ return EVENT_DATE ? new Date(EVENT_DATE+'T'+sched[i].st).getTime() : sched[i].rawStart; }
+      function eAt(i){ return EVENT_DATE ? new Date(EVENT_DATE+'T'+sched[i].et).getTime() : sched[i].rawEnd; }
+      // Rein zeitbasiert: erste Station, deren Start noch nicht erreicht ist.
       function nextIdx(){
         var now=Date.now(),k;
-        for(k=0;k<sched.length;k++){ if(sched[k].start>now) return k; }
-        if(sched.length&&now<sched[sched.length-1].end) return sched.length-1;
+        for(k=0;k<sched.length;k++){ if(sAt(k)>now) return k; }
+        if(sched.length&&now<eAt(sched.length-1)) return sched.length-1;
         return -1;
+      }
+      // Tatsächliches Ziel: springt auch weiter, sobald man an einer Station angekommen ist.
+      function targetIdx(){
+        var ci=nextIdx();
+        if(ci<0) return -1;
+        var t=Math.max(ci,arrivedMax+1);
+        return t>=sched.length ? -1 : t;
       }
       function labelOf(idx){ return (sched[idx]&&sched[idx].name)?sched[idx].name:stops[idx].name; }
       function fmtDist(m){ return m>=1000 ? (m/1000).toFixed(1).replace('.',',')+' km' : (Math.round(m/10)*10)+' m'; }
@@ -1156,7 +1169,7 @@ Christian L.</textarea>
         fetch(url).then(function(r){return r.json();}).then(function(d){
           var sum=d&&d.features&&d.features[0]&&d.features[0].properties&&d.features[0].properties.summary;
           if(!sum||sum.duration==null) return;
-          if(nextIdx()!==idx) return; // Ziel hat sich inzwischen geändert
+          if(targetIdx()!==idx) return; // Ziel hat sich inzwischen geändert
           var mins=Math.max(1,Math.round(sum.duration/60));
           info.textContent='🚶 ~'+mins+' Min zu Fuß · '+fmtDist(sum.distance)+' bis '+labelOf(idx)+' (echter Fußweg)';
         }).catch(function(){});
@@ -1164,7 +1177,7 @@ Christian L.</textarea>
 
       function updateInfo(){
         if(!info) return;
-        var idx=nextIdx();
+        var idx=targetIdx();
         if(routeBtn) routeBtn.style.display=(meLL&&idx>=0)?'':'none';
         if(idx<0){ info.textContent='🎉 Tag geschafft – keine Station mehr offen.'; return; }
         var label=labelOf(idx);
@@ -1176,7 +1189,7 @@ Christian L.</textarea>
       }
 
       function openTransit(){
-        var idx=nextIdx();
+        var idx=targetIdx();
         if(idx<0||!meLL) return;
         window.open('https://www.google.com/maps/dir/?api=1&origin='+meLL[0]+','+meLL[1]
           +'&destination='+stops[idx].q+'&travelmode=transit','_blank','noopener');
@@ -1194,6 +1207,7 @@ Christian L.</textarea>
           if(arrived[ai]) continue;
           if(map.distance(meLL,[stops[ai].lat,stops[ai].lng])<=70){
             arrived[ai]=true;
+            if(ai>arrivedMax) arrivedMax=ai;
             var nm=(sched[ai]&&sched[ai].name)?sched[ai].name:stops[ai].name;
             if(window.tbtToast) window.tbtToast('✓ Du bist bei „'+nm+'" angekommen!');
           }
@@ -1218,6 +1232,7 @@ Christian L.</textarea>
       if(routeBtn)routeBtn.addEventListener('click',openTransit);
       updateInfo();
       setInterval(updateInfo,30000);
+      if(window.tbtRegisterDateHandler) window.tbtRegisterDateHandler(function(ds){ EVENT_DATE=ds; updateInfo(); });
     })();
 
     var mapEl=document.getElementById('map');
