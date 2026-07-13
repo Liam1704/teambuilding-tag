@@ -1039,6 +1039,40 @@ Christian L.</textarea>
         } else { fallback(); }
       }).catch(fallback);
     }
+    // --- Wetter-Vorschau/Demo (nur zum Testen): ?wetter=sonne|wolken|regen|schnee oder ?wetter=demo ---
+    function showPreview(p,label){
+      var w=wmo(p.c);
+      emoji.textContent=w.e;
+      temp.textContent='H\u00f6chsttemperatur '+p.hi+'\u00b0  \u00b7  Tiefsttemperatur '+p.lo+'\u00b0';
+      desc.textContent=w.t;
+      if(p.pop>=60){rain.textContent='\u2614 Regen wahrscheinlich ('+p.pop+'%)';rain.style.color='color-mix(in srgb, #3B82F6 68%, var(--ink))';}
+      else if(p.pop>=25){rain.textContent='\ud83c\udf26\ufe0f Schauer m\u00f6glich ('+p.pop+'%)';rain.style.color='color-mix(in srgb, #F4A81D 55%, var(--ink))';}
+      else {rain.textContent='\ud83c\udf02 Voraussichtlich trocken ('+p.pop+'%)';rain.style.color='color-mix(in srgb, #16C79A 60%, var(--ink))';}
+      if(window.setWeatherFX){var cc=p.c;window.setWeatherFX((cc===0||cc===1||cc===2)?'sun':(cc>=71&&cc<=77)?'snow':((cc>=51&&cc<=67)||(cc>=80&&cc<=82)||cc>=95)?'rain':'cloud');}
+      meta.textContent=label||'Wetter-Vorschau (Test)';
+    }
+    var pv=(new URLSearchParams(location.search)).get('wetter');
+    if(pv){
+      pv=pv.toLowerCase();
+      var states={
+        sonne:{c:0,hi:25,lo:13,pop:5}, sun:{c:0,hi:25,lo:13,pop:5},
+        heiter:{c:2,hi:22,lo:12,pop:10},
+        wolken:{c:3,hi:18,lo:11,pop:20}, cloud:{c:3,hi:18,lo:11,pop:20},
+        regen:{c:63,hi:15,lo:10,pop:85}, rain:{c:63,hi:15,lo:10,pop:85},
+        schnee:{c:73,hi:1,lo:-3,pop:70}, snow:{c:73,hi:1,lo:-3,pop:70},
+        gewitter:{c:95,hi:19,lo:13,pop:90}
+      };
+      if(pv==='demo'||pv==='cycle'){
+        var seq=[states.sonne,states.heiter,states.wolken,states.regen,states.schnee,states.gewitter];
+        var names=['sonnig','heiter','bew\u00f6lkt','regnerisch','winterlich','gewittrig'];
+        var i=0;
+        showPreview(seq[0],'Wetter-Demo: '+names[0]+' \u2026');
+        setInterval(function(){ i=(i+1)%seq.length; showPreview(seq[i],'Wetter-Demo: '+names[i]+' \u2026'); },3500);
+        return;
+      }
+      if(states[pv]){ showPreview(states[pv],'Wetter-Vorschau (Test) \u00b7 '+pv); return; }
+    }
+
     waiting();
     window.tbtRegisterDateHandler(applyDate);
   })();
