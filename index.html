@@ -492,6 +492,14 @@ html.laser-red h1.title,
   .lb2-list li.top1{border-color:var(--c-breakfast);}
   .lb2-empty{justify-content:center;color:var(--muted);font-weight:400;}
   @media (prefers-reduced-motion:reduce){ .game-target,.game-target.leaving,.game-float{animation:none;} }
+  /* Kalender-Knopf (erscheint erst, wenn ein Termin fix ist) */
+  .cal-line{margin-top:14px;}
+  .cal-btn{display:none;align-items:center;gap:8px;font-family:"Nunito",sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;background:var(--primary);color:#fff;border:none;padding:11px 18px;border-radius:14px;box-shadow:0 10px 24px -10px rgba(76,93,247,.8);transition:transform .15s ease,filter .2s ease;}
+  .cal-btn.show{display:inline-flex;animation:calIn .5s ease both;}
+  .cal-btn:hover{filter:brightness(1.06);}
+  .cal-btn:active{transform:scale(.96);}
+  @keyframes calIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){.cal-btn.show{animation:none;}}
 </style>
 </head>
 <body>
@@ -520,6 +528,7 @@ html.laser-red h1.title,
       <h1 class="title rise d2" id="rickTitle" role="button" tabindex="0" aria-label="Team-Building-Tag">Team-Building-Tag</h1>
       <p class="tagline rise d3">Kaffee, Lasertag, Minigolf und gutes Essen – ein Tag nur für uns.</p>
       <span class="datechip rise d4"><span class="dot"></span><span id="dateChipText">Termin folgt</span></span>
+      <div class="cal-line rise d4"><button id="icsBtn" class="cal-btn" type="button">📅 Zum Kalender hinzufügen</button></div>
       <div class="facts rise d5">
         <span class="fact"><span class="emoji">🕘</span>Start 9:00 Uhr</span>
         <span class="fact"><span class="emoji">👥</span>7 Personen</span>
@@ -1892,6 +1901,43 @@ Christian L.</textarea>
       }).catch(function(){ if(lbStatus) lbStatus.textContent=''; lbList.innerHTML='<li class="lb2-empty">Bestenliste konnte nicht geladen werden</li>'; });
     }
     loadBoard();
+  })();
+</script>
+<script>
+  // ---------- "Zum Kalender hinzufügen" (.ics), erscheint sobald ein Termin fix ist ----------
+  (function(){
+    var btn=document.getElementById('icsBtn'); if(!btn) return;
+    var dateStr=null;
+    function pad(n){ return (n<10?'0':'')+n; }
+    function stampUTC(d){ return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+'Z'; }
+    function esc(t){ return String(t).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n'); }
+    function build(){
+      var d=dateStr.replace(/-/g,'');
+      var desc='Programm des Team-Building-Tags:\n09:00 Frühstück (Café Landtmann)\n10:45 Lasertag\n13:15 Mittagessen (Verde)\n15:00 Minigolf (Blacklite Arena)\n18:00 Abendessen (Huth Gastwirtschaft)\n\nAlle Infos & Öffi-Routen auf der Website.';
+      return [
+        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Team-Building-Tag//IT//DE','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        'UID:tbt-'+dateStr+'@teambuilding-tag',
+        'DTSTAMP:'+stampUTC(new Date()),
+        'DTSTART:'+d+'T090000',
+        'DTEND:'+d+'T194500',
+        'SUMMARY:'+esc('Team-Building-Tag · IT-Abteilung'),
+        'LOCATION:'+esc('Wien'),
+        'DESCRIPTION:'+esc(desc),
+        'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:'+esc('Morgen ist Team-Building-Tag!'),'END:VALARM',
+        'END:VEVENT','END:VCALENDAR'
+      ].join('\r\n');
+    }
+    function download(){
+      if(!dateStr) return;
+      var blob=new Blob([build()],{type:'text/calendar;charset=utf-8'});
+      var url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url; a.download='team-building-tag.ics'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); },4000);
+      if(window.tbtToast) window.tbtToast('📅 Kalender-Datei erstellt – im Kalender öffnen zum Speichern.');
+    }
+    btn.addEventListener('click',download);
+    if(window.tbtRegisterDateHandler) window.tbtRegisterDateHandler(function(ds){ dateStr=ds; btn.classList.add('show'); });
   })();
 </script>
 </body>
