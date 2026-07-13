@@ -529,9 +529,27 @@ html.laser-red h1.title,
   .mascot-close{position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;border:2px solid var(--surface);font-size:.72rem;line-height:1;cursor:pointer;display:grid;place-items:center;z-index:2;padding:0;}
   @media (max-width:480px){ .mascot-badge{width:60px;height:60px;} .mascot-bubble{max-width:150px;font-size:.76rem;} }
   @media (prefers-reduced-motion:reduce){ .mascot-badge{animation:none;} }
+  /* Ganzseitige Wetter-Ebene im Hintergrund */
+  #skyfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+  html.laser-red #skyfx,html.laser-blue #skyfx{opacity:0;}
+  #skyfx .sun{position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#FFE9A6,#F7B733 60%,rgba(247,183,51,0) 72%);opacity:0;transform:scale(.8);animation:sunIn 1s ease forwards;}
+  #skyfx .sun::before{content:"";position:absolute;inset:-40px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(247,183,51,.32) 0deg 7deg,transparent 7deg 24deg);-webkit-mask:radial-gradient(circle,transparent 96px,#000 98px);mask:radial-gradient(circle,transparent 96px,#000 98px);animation:spin 60s linear infinite;}
+  #skyfx .cloud{position:absolute;left:0;background:#fff;border-radius:80px;opacity:.5;filter:drop-shadow(0 8px 14px rgba(0,0,0,.06));animation:skyDrift linear infinite;}
+  :root[data-theme="dark"] #skyfx .cloud{background:#c9cae6;opacity:.3;}
+  #skyfx .cloud::before,#skyfx .cloud::after{content:"";position:absolute;background:inherit;border-radius:50%;}
+  #skyfx .cloud::before{width:58%;height:170%;top:-70%;left:12%;}
+  #skyfx .cloud::after{width:44%;height:140%;top:-46%;right:14%;}
+  @keyframes skyDrift{from{transform:translateX(-220px);}to{transform:translateX(calc(100vw + 220px));}}
+  #skyfx .drop{position:absolute;top:-24px;width:2px;height:18px;border-radius:2px;background:linear-gradient(transparent,#5b9df9);opacity:.5;animation:skyRain linear infinite;}
+  @keyframes skyRain{0%{transform:translateY(-24px);opacity:0;}10%{opacity:.5;}100%{transform:translateY(102vh);opacity:.18;}}
+  #skyfx .flake{position:absolute;top:-24px;color:#fff;opacity:.75;animation:skySnow linear infinite;}
+  :root[data-theme="dark"] #skyfx .flake{color:#dfe0ff;}
+  @keyframes skySnow{0%{transform:translateY(-24px) translateX(0) rotate(0);}100%{transform:translateY(102vh) translateX(40px) rotate(320deg);}}
+  @media (prefers-reduced-motion:reduce){ #skyfx{display:none;} }
 </style>
 </head>
 <body>
+  <div id="skyfx" aria-hidden="true"></div>
 
   <nav class="nav">
     <div class="nav-inner wrap">
@@ -1341,12 +1359,17 @@ Christian L.</textarea>
 
   // ---------- Weather ambient animations ----------
   (function(){
-    var box=document.getElementById('wfx'); if(!box) return;
+    var box=document.getElementById('wfx');
+    var sky=document.getElementById('skyfx');
     var rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function cloud(top,h,w,dur,delay){var c=document.createElement('div');c.className='cloud';c.style.top=top+'px';c.style.height=h+'px';c.style.width=w+'px';c.style.animationDuration=dur+'s';c.style.animationDelay=delay+'s';box.appendChild(c);}
-    window.setWeatherFX=function(cat){
+    var lastCat=null;
+
+    // Kleine Wetter-Karte (wie bisher)
+    function fillCard(cat){
+      if(!box) return;
       box.innerHTML='';
       if(rm) return;
+      function cloud(top,h,w,dur,delay){var c=document.createElement('div');c.className='cloud';c.style.top=top+'px';c.style.height=h+'px';c.style.width=w+'px';c.style.animationDuration=dur+'s';c.style.animationDelay=delay+'s';box.appendChild(c);}
       if(cat==='sun'){var s=document.createElement('div');s.className='sun';box.appendChild(s);cloud(56,15,46,34,-6);}
       else if(cat==='cloud'){cloud(16,20,64,26,0);cloud(44,15,46,34,-9);cloud(30,18,56,30,-16);}
       else if(cat==='rain'||cat==='snow'){
@@ -1362,7 +1385,44 @@ Christian L.</textarea>
           box.appendChild(el);
         }
       }
-    };
+    }
+
+    // Ganze Seite im Hintergrund
+    function fillSky(cat){
+      if(!sky) return;
+      sky.innerHTML='';
+      if(rm) return;
+      var vw=Math.max(320,window.innerWidth||360);
+      function bigCloud(topPct,w,dur,delay){
+        var c=document.createElement('div');c.className='cloud';
+        c.style.top=topPct+'%';c.style.width=w+'px';c.style.height=Math.round(w*0.32)+'px';
+        c.style.animationDuration=dur+'s';c.style.animationDelay=delay+'s';
+        sky.appendChild(c);
+      }
+      if(cat==='sun'){
+        var s=document.createElement('div');s.className='sun';sky.appendChild(s);
+        bigCloud(16,150,90,-20); bigCloud(38,110,120,-60);
+      } else if(cat==='cloud'){
+        bigCloud(8,160,80,0); bigCloud(24,120,110,-30); bigCloud(42,180,95,-55); bigCloud(60,110,130,-80);
+      } else if(cat==='rain'||cat==='snow'){
+        bigCloud(6,150,90,0); bigCloud(22,120,110,-40);
+        var n=cat==='rain'?Math.min(90,Math.round(vw/16)):Math.min(70,Math.round(vw/20)),i,el;
+        for(i=0;i<n;i++){
+          el=document.createElement('div');
+          el.className=cat==='rain'?'drop':'flake';
+          if(cat==='snow'){ el.textContent='❄'; el.style.fontSize=(0.6+Math.random()*0.8)+'rem'; }
+          el.style.left=Math.round(Math.random()*vw)+'px';
+          el.style.animationDuration=(cat==='rain'?(0.7+Math.random()*0.7):(4+Math.random()*4))+'s';
+          el.style.animationDelay=(-Math.random()*5)+'s';
+          sky.appendChild(el);
+        }
+      }
+    }
+
+    window.setWeatherFX=function(cat){ lastCat=cat; fillCard(cat); fillSky(cat); };
+
+    var rt=null;
+    window.addEventListener('resize',function(){ if(rm||!lastCat) return; clearTimeout(rt); rt=setTimeout(function(){ fillSky(lastCat); },300); });
   })();
 
   // ---------- Photo gallery + QR (shared Supabase cloud, local fallback) ----------
