@@ -533,16 +533,16 @@ html.laser-red h1.title,
   #skyfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
   html.laser-red #skyfx,html.laser-blue #skyfx{opacity:0;}
   #skyfx .sun{position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#FFE9A6,#F7B733 60%,rgba(247,183,51,0) 72%);opacity:0;transform:scale(.8);animation:sunIn 1s ease forwards;}
-  #skyfx .sun::before{content:"";position:absolute;inset:-40px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(247,183,51,.32) 0deg 7deg,transparent 7deg 24deg);-webkit-mask:radial-gradient(circle,transparent 96px,#000 98px);mask:radial-gradient(circle,transparent 96px,#000 98px);animation:spin 60s linear infinite;}
-  #skyfx .cloud{position:absolute;left:0;background:#fff;border-radius:80px;opacity:.5;filter:drop-shadow(0 8px 14px rgba(0,0,0,.06));animation:skyDrift linear infinite;}
-  :root[data-theme="dark"] #skyfx .cloud{background:#c9cae6;opacity:.3;}
+  #skyfx .sun::before{content:"";position:absolute;inset:-40px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(247,183,51,.5) 0deg 7deg,transparent 7deg 24deg);-webkit-mask:radial-gradient(circle,transparent 96px,#000 98px);mask:radial-gradient(circle,transparent 96px,#000 98px);animation:spin 60s linear infinite;}
+  #skyfx .cloud{position:absolute;left:0;background:#fff;border-radius:80px;opacity:.9;filter:drop-shadow(0 10px 20px rgba(70,90,140,.28));animation:skyDrift linear infinite;}
+  :root[data-theme="dark"] #skyfx .cloud{background:#c9cae6;opacity:.55;}
   #skyfx .cloud::before,#skyfx .cloud::after{content:"";position:absolute;background:inherit;border-radius:50%;}
   #skyfx .cloud::before{width:58%;height:170%;top:-70%;left:12%;}
   #skyfx .cloud::after{width:44%;height:140%;top:-46%;right:14%;}
   @keyframes skyDrift{from{transform:translateX(-220px);}to{transform:translateX(calc(100vw + 220px));}}
-  #skyfx .drop{position:absolute;top:-24px;width:2px;height:18px;border-radius:2px;background:linear-gradient(transparent,#5b9df9);opacity:.5;animation:skyRain linear infinite;}
-  @keyframes skyRain{0%{transform:translateY(-24px);opacity:0;}10%{opacity:.5;}100%{transform:translateY(102vh);opacity:.18;}}
-  #skyfx .flake{position:absolute;top:-24px;color:#fff;opacity:.75;animation:skySnow linear infinite;}
+  #skyfx .drop{position:absolute;top:-24px;width:3px;height:22px;border-radius:2px;background:linear-gradient(rgba(59,130,246,0),#3b82f6);opacity:.8;animation:skyRain linear infinite;}
+  @keyframes skyRain{0%{transform:translateY(-24px);opacity:0;}10%{opacity:.8;}100%{transform:translateY(102vh);opacity:.35;}}
+  #skyfx .flake{position:absolute;top:-24px;color:#8ab4ff;opacity:.95;text-shadow:0 1px 2px rgba(40,60,120,.45);animation:skySnow linear infinite;}
   :root[data-theme="dark"] #skyfx .flake{color:#dfe0ff;}
   @keyframes skySnow{0%{transform:translateY(-24px) translateX(0) rotate(0);}100%{transform:translateY(102vh) translateX(40px) rotate(320deg);}}
   @media (prefers-reduced-motion:reduce){ #skyfx{display:none;} }
@@ -1406,7 +1406,7 @@ Christian L.</textarea>
         bigCloud(8,160,80,0); bigCloud(24,120,110,-30); bigCloud(42,180,95,-55); bigCloud(60,110,130,-80);
       } else if(cat==='rain'||cat==='snow'){
         bigCloud(6,150,90,0); bigCloud(22,120,110,-40);
-        var n=cat==='rain'?Math.min(90,Math.round(vw/16)):Math.min(70,Math.round(vw/20)),i,el;
+        var n=cat==='rain'?Math.min(120,Math.round(vw/11)):Math.min(90,Math.round(vw/15)),i,el;
         for(i=0;i<n;i++){
           el=document.createElement('div');
           el.className=cat==='rain'?'drop':'flake';
