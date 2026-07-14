@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#FBF9F4">
-<title>Mittagessen · Speisekarte</title>
+<title>Abendessen · Speisekarte</title>
 <script>(function(){try{var m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.setAttribute('data-theme',m?'dark':'light');}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,11 +43,24 @@
   .hint.small{font-size:.85rem;margin-top:14px;}
   .pdf-wrap{margin-top:16px;border:1.5px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow);}
   .pdf-wrap iframe{display:block;width:100%;height:78vh;border:0;}
+  .menu-note{color:var(--muted);font-size:.9rem;margin:0 0 14px;}
+  .menu{margin-top:10px;}
+  .cat{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.15rem;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;margin:26px 0 4px;border-bottom:2px solid var(--line);padding-bottom:6px;}
+  .cat-note{color:var(--muted);font-size:.85rem;font-style:italic;margin:0 0 8px;}
+  .item{padding:11px 0;border-bottom:1px solid var(--line);}
+  .item:last-child{border-bottom:0;}
+  .item-top{display:flex;justify-content:space-between;gap:14px;align-items:baseline;}
+  .item-name{font-weight:800;font-size:1rem;}
+  .item-name .alg{font-weight:600;font-size:.72rem;color:var(--muted);font-family:"JetBrains Mono",monospace;}
+  .item-price{font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--accent);white-space:nowrap;}
+  .item-desc{color:var(--muted);font-size:.92rem;margin-top:2px;}
+  .item-sub{color:var(--muted);font-size:.86rem;margin-top:4px;padding-left:12px;border-left:2px solid var(--line);display:flex;justify-content:space-between;gap:10px;}
+  .veg{color:#16C79A;font-weight:800;font-size:.68rem;margin-left:5px;white-space:nowrap;}
   footer{margin:40px 0 60px;text-align:center;color:var(--muted);font-size:.85rem;}
   footer .ver{font-family:"JetBrains Mono",monospace;display:block;margin-top:6px;opacity:.7;}
 </style>
 </head>
-<body style="--accent:#16C79A">
+<body style="--accent:#FF7A45">
   <nav class="nav">
     <div class="nav-inner wrap">
       <a class="nav-brand" href="index.html">🎯 Team-Tag</a>
@@ -57,26 +70,149 @@
   <header class="hero">
     <div class="wrap">
       <a class="back" href="index.html">← Zurück zum Programm</a>
-      <div class="badge">🍝</div>
-      <div class="eyebrow">Mittagessen · 13:15 – 14:45</div>
-      <h1>Verde</h1>
-      <div class="addr">Wallnerstraße 2, 1010 Wien</div>
+      <div class="badge">🍽️</div>
+      <div class="eyebrow">Abendessen · 18:00 – 19:45</div>
+      <h1>Huth Gastwirtschaft</h1>
+      <div class="addr">Schellinggasse 5, 1010 Wien</div>
       <div class="actions">
-        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Verde%2C+Wallnerstra%C3%9Fe+2%2C+1010+Wien&travelmode=transit">🚇 Anfahrt (Öffis)</a>
-        <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Verde%2C+Wallnerstra%C3%9Fe+2%2C+1010+Wien">📍 Auf Karte</a>
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=Huth+Gastwirtschaft%2C+Schellinggasse+5%2C+1010+Wien&travelmode=transit">🚇 Anfahrt (Öffis)</a>
+        <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Huth+Gastwirtschaft%2C+Schellinggasse+5%2C+1010+Wien">📍 Auf Karte</a>
       </div>
     </div>
   </header>
   <main class="wrap">
     <h2 class="menu-head">Speisekarte</h2>
-    <p class="hint">Hier die aktuelle Speisekarte. Falls die Vorschau am Handy mal nicht lädt, öffne sie einfach direkt als PDF.</p>
-    <a class="btn btn-primary big" target="_blank" rel="noopener" href="https://www.verde.wien/wp-content/uploads/verde-menu-lunch-dinner.pdf">📄 Als PDF öffnen</a>
-    <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.verde.wien/">🔗 Auf verde.wien ansehen</a>
-    <div class="pdf-wrap"><iframe title="Speisekarte Verde" src="https://docs.google.com/gview?embedded=true&url=https%3A%2F%2Fwww.verde.wien%2Fwp-content%2Fuploads%2Fverde-menu-lunch-dinner.pdf" loading="lazy"></iframe></div>
+    <p class="menu-note">Die komplette Speisekarte der Huth Gastwirtschaft – klassische Wiener Küche. Preise in €, Änderungen vorbehalten.</p>
+    <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.huth-gastwirtschaft.at/speisekarte" style="margin-bottom:8px">🔗 Auf huth-gastwirtschaft.at ansehen</a>
+    <div class="menu">
+      <div class="cat">Zu Beginn</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Huth Hausbrot <span class="alg">(A,F)</span></span><span class="item-price">2,80</span></div>
+        <div class="item-desc">täglich frisch gebacken</div>
+        <div class="item-sub">Verhackertes <span class="item-price">+ 4,80</span></div>
+        <div class="item-sub">Gesalzene Butter <span class="alg">(G)</span> <span class="item-price">+ 1,50</span></div>
+        <div class="item-sub">Wurzelspeck <span class="alg">(L,M)</span> <span class="item-price">+ 6,80</span></div>
+      </div>
+      <div class="cat">Vorspeisen</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Käferbohnensalat<span class="veg">🌱&nbsp;V</span> </span><span class="item-price">11,90</span></div>
+        <div class="item-desc">steirischer Käferbohnensalat mit Vogerlsalat und Kernöl</div>
+        <div class="item-sub">+ Bio-Schafskäsegupferl <span class="alg">(G,M,O)</span> <span class="item-price">+ 5,20</span></div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Grammelknödel <span class="alg">(A,C,F,G,L,O)</span></span><span class="item-price">14,90 / 19,90</span></div>
+        <div class="item-desc">mit Fasslkraut und knusprigen Grammeln</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Kärntner Kasnudeln<span class="veg">🌱&nbsp;V</span> <span class="alg">(A,C,G,O)</span></span><span class="item-price">14,90 / 19,90</span></div>
+        <div class="item-desc">mit brauner Butter und Schnittlauch</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Beef Tatar <span class="alg">(A,C,D,F,G,M,O)</span></span><span class="item-price">19,90 / 24,90</span></div>
+        <div class="item-desc">mit Pfefferrahm, Wachtelei und Toastbrot</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Briefmarkenschnitzel vom Kalb <span class="alg">(A,C,D,G,M)</span></span><span class="item-price">24,90</span></div>
+        <div class="item-desc">Wiener Fingerfood mit Sardellen-Ketchup</div>
+      </div>
+      <div class="cat">Suppen</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Klare Rindsuppe vom Tafelspitz <span class="alg">(A,C,F,G,L,O)</span></span><span class="item-price">7,90</span></div>
+        <div class="item-desc">wahlweise mit Frittaten, Leberknödel oder hausgemachten Nudeln</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Gurkenrahm-Kaltschale <span class="alg">(B,G,O)</span></span><span class="item-price">8,90</span></div>
+        <div class="item-desc">mit Garnelen</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Huth Suppentopf <span class="alg">(A,C,F,G,L,O)</span></span><span class="item-price">pP 11,90</span></div>
+        <div class="item-desc">Alt-Wiener Suppentopf für zwei, mit Nudeln, Rindfleisch und Suppengemüse, in der Terrine serviert</div>
+      </div>
+      <div class="cat">Wiener Rindfleisch</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Gekochter Tafelspitz <span class="alg">(A,C,F,G,L,O)</span></span><span class="item-price">31,90</span></div>
+        <div class="item-desc">mit Wurzelgemüse, Rösterdäpfeln, Apfelkren und Schnittlauchsauce</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Rind ohne Fleisch<span class="veg">🌱&nbsp;V</span> <span class="alg">(A,C,F,G,L)</span></span><span class="item-price">17,90</span></div>
+        <div class="item-desc">gold gebackenes Ei auf Cremespinat, mit Wurzelgemüse, Rösterdäpfeln, Apfelkren und Schnittlauchsauce</div>
+      </div>
+      <div class="cat">Beilagen</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Cremespinat <span class="alg">(A,F,G,L)</span></span><span class="item-price">5,80</span></div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Semmelkren <span class="alg">(A,F,G,L)</span></span><span class="item-price">5,80</span></div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">2 Stk. Markknochen </span><span class="item-price">9,90</span></div>
+        <div class="item-desc">mit gebähtem Hausbrot</div>
+        <div class="item-sub">Jede weitere Markscheibe <span class="item-price">+ 3,80</span></div>
+      </div>
+      <div class="cat">Hauptgerichte</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Getrüffelte Frischkäsetascherl<span class="veg">🌱&nbsp;V</span> <span class="alg">(A,C,G,L,O)</span></span><span class="item-price">18,90</span></div>
+        <div class="item-desc">mit Pfirsich</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Geröstete Kalbsleber <span class="alg">(F,G,L,O)</span></span><span class="item-price">22,90</span></div>
+        <div class="item-desc">klassisch mit Risibisi</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Rostbraten &amp; Fries <span class="alg">(A,F,L,O)</span></span><span class="item-price">29,90</span></div>
+        <div class="item-desc">rosa Zwiebelrostbraten aus der Beiried mit French Fries</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Faschierte Kalbsbutterschnitzel <span class="alg">(A,C,F,G,L,M,O)</span></span><span class="item-price">22,90</span></div>
+        <div class="item-desc">auf cremigem Erdäpfelpüree</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Fisch des Tages <span class="alg">(D,G)</span></span></div>
+        <div class="item-desc">mit saisonalen Beilagen</div>
+      </div>
+      <div class="cat">Gebackenes</div>
+      <div class="cat-note">inkl. einer Beilage zur Wahl: Erdäpfel-Vogerlsalat (A,C,F,G,L,M,O), Risibisi (G) oder French Fries</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Wiener Backhendl <span class="alg">(A,C,G)</span></span><span class="item-price">22,90</span></div>
+        <div class="item-desc">mit Joghurt-Zitronen-Marinade in knusprigen Bröseln</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Wiener Schnitzel <span class="alg">(A,C)</span></span><span class="item-price">30,90</span></div>
+        <div class="item-desc">klassisch vom Kalb</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Luxus Cordon Bleu <span class="alg">(A,C,F,G,L,M,O)</span></span><span class="item-price">35,90</span></div>
+        <div class="item-desc">vom Kalb, gefüllt mit Beinschinken, Emmentaler, Trüffelcreme, Spiegelei und schwarzem Trüffel</div>
+      </div>
+      <div class="cat">Süßspeisen</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Kaiserschmarrn <span class="alg">(A,C,G,O)</span></span><span class="item-price">13,90</span></div>
+        <div class="item-desc">luftig und karamellisiert, mit Rum-Zwetschken</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Powidltascherl <span class="alg">(A,C,G)</span></span><span class="item-price">10,90 / 13,90</span></div>
+        <div class="item-desc">mit Butterbröseln und Staubzucker</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Warmer Schokokuchen <span class="alg">(A,C,G,H)</span></span><span class="item-price">9,90</span></div>
+        <div class="item-desc">mit Schokosauce und Himbeersorbet</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Apfelstrudel <span class="alg">(A,C,G)</span></span><span class="item-price">8,80</span></div>
+        <div class="item-desc">mit Schlagobers</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Huth Cremeschnitte XXL <span class="alg">(A,C,G)</span></span><span class="item-price">7,90</span></div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Eismarillenknödel <span class="alg">(C,G,H)</span></span><span class="item-price">pro Stück 5,30</span></div>
+        <div class="item-desc">Original von Tichy</div>
+      </div>
+    </div>
 
     <footer>
       Team-Building-Tag · IT-Abteilung Ärztekammer Wien
-      <span class="ver">// mittagessen.html</span>
+      <span class="ver">// abendessen.html</span>
     </footer>
   </main>
   <script>
