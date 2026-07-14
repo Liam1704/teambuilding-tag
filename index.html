@@ -604,8 +604,8 @@ html.laser-red h1.title,
     </section>
 
     <section id="termin" class="reveal">
-      <div class="sec-head"><h2>Termin finden</h2><span class="count">// Donnerstage Aug–Sep</span></div>
-      <p class="poll-intro">Der Tag ist noch nicht fix – fix ist nur: es wird ein <strong>Donnerstag</strong>. Trag ein, an welchen Donnerstagen du kannst. Alle sehen live, wer wann kann (inkl. Zeitpunkt der Abstimmung).</p>
+      <div class="sec-head"><h2>Termin finden</h2><span class="count">// Dienstage Aug–Sep</span></div>
+      <p class="poll-intro">Der Tag ist noch nicht fix – fix ist nur: es wird ein <strong>Dienstag</strong>. Trag ein, an welchen Dienstagen du kannst. Alle sehen live, wer wann kann (inkl. Zeitpunkt der Abstimmung).</p>
       <div class="me-pick">
         <label for="terminMe">Wer bist du?</label>
         <select id="terminMe"><option value="">— Namen wählen —</option></select>
@@ -631,7 +631,7 @@ html.laser-red h1.title,
       </div>
 
       <ol class="timeline">
-        <li class="stop reveal" style="--accent:var(--c-breakfast)" data-start="2026-09-17T09:00:00+02:00" data-end="2026-09-17T10:15:00+02:00" data-name="Frühstück" data-emoji="☕">
+        <li class="stop reveal" style="--accent:var(--c-breakfast)" data-start="2026-09-15T09:00:00+02:00" data-end="2026-09-15T10:15:00+02:00" data-name="Frühstück" data-emoji="☕">
           <div class="stop-rail"><div class="stop-icon">☕</div></div>
           <div class="stop-card">
             <div class="stop-time">09:00 – 10:15</div>
@@ -647,7 +647,7 @@ html.laser-red h1.title,
             <div class="hop-info"><span class="ic">🚇</span>ca. 10&nbsp;Min mit den Öffis bis zum Lasertag</div>
           </div>
         </li>
-        <li class="stop reveal" style="--accent:var(--c-laser)" data-start="2026-09-17T10:45:00+02:00" data-end="2026-09-17T12:45:00+02:00" data-name="Lasertag" data-emoji="🎯">
+        <li class="stop reveal" style="--accent:var(--c-laser)" data-start="2026-09-15T10:45:00+02:00" data-end="2026-09-15T12:45:00+02:00" data-name="Lasertag" data-emoji="🎯">
           <div class="stop-rail"><div class="stop-icon">🎯</div></div>
           <div class="stop-card">
             <div class="stop-time">10:45 – 12:45</div>
@@ -662,7 +662,7 @@ html.laser-red h1.title,
             <div class="hop-info"><span class="ic">🚇</span>ca. 15&nbsp;Min mit den Öffis bis zum Mittagessen</div>
           </div>
         </li>
-        <li class="stop reveal" style="--accent:var(--c-lunch)" data-start="2026-09-17T13:15:00+02:00" data-end="2026-09-17T14:45:00+02:00" data-name="Mittagessen" data-emoji="🍝">
+        <li class="stop reveal" style="--accent:var(--c-lunch)" data-start="2026-09-15T13:15:00+02:00" data-end="2026-09-15T14:45:00+02:00" data-name="Mittagessen" data-emoji="🍝">
           <div class="stop-rail"><div class="stop-icon">🍝</div></div>
           <div class="stop-card">
             <div class="stop-time">13:15 – 14:45</div>
@@ -678,7 +678,7 @@ html.laser-red h1.title,
             <div class="hop-info"><span class="ic">🚇</span>ca. 40&nbsp;Min mit den Öffis bis zum Minigolf</div>
           </div>
         </li>
-        <li class="stop reveal" style="--accent:var(--c-free)" data-start="2026-09-17T15:30:00+02:00" data-end="2026-09-17T17:00:00+02:00" data-name="Minigolf" data-emoji="⛳">
+        <li class="stop reveal" style="--accent:var(--c-free)" data-start="2026-09-15T15:30:00+02:00" data-end="2026-09-15T17:00:00+02:00" data-name="Minigolf" data-emoji="⛳">
           <div class="stop-rail"><div class="stop-icon">⛳</div></div>
           <div class="stop-card">
             <div class="stop-time">15:30 – 17:00</div>
@@ -693,7 +693,7 @@ html.laser-red h1.title,
             <div class="hop-info"><span class="ic">🚇</span>ca. 40&nbsp;Min mit den Öffis bis zum Abendessen</div>
           </div>
         </li>
-        <li class="stop reveal" style="--accent:var(--c-dinner)" data-start="2026-09-17T18:00:00+02:00" data-end="2026-09-17T19:45:00+02:00" data-name="Abendessen" data-emoji="🍽️">
+        <li class="stop reveal" style="--accent:var(--c-dinner)" data-start="2026-09-15T18:00:00+02:00" data-end="2026-09-15T19:45:00+02:00" data-name="Abendessen" data-emoji="🍽️">
           <div class="stop-rail"><div class="stop-icon">🍽️</div></div>
           <div class="stop-card">
             <div class="stop-time">18:00 – 19:45</div>
@@ -1450,7 +1450,7 @@ Christian L.</textarea>
     try{ voterId=localStorage.getItem('tbt_voter')||''; if(!voterId){ voterId=(Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-z0-9]/g,''); localStorage.setItem('tbt_voter',voterId); } }catch(e){ voterId='v'+Math.floor(Math.random()*1e9); }
     var votes={},myVote=null,leaderName=null;
     var prevLeader=null,votesLoadedOnce=false;
-    var VOTE_OPEN=new Date('2026-09-17T18:00:00+02:00').getTime(); // Voting oeffnet am Abend
+    var VOTE_OPEN=new Date('2026-09-15T18:00:00+02:00').getTime(); // Voting oeffnet am Abend
     function voteOpen(){ try{ if(new URLSearchParams(location.search).get('vote')==='open') return true; }catch(e){} return Date.now()>=VOTE_OPEN; }
     function voteFile(name){ return 'votes/'+voterId+'__'+name; }
     function showToast(msg){
@@ -1755,8 +1755,8 @@ Christian L.</textarea>
       {id:'p3',name:'Anja'},{id:'p4',name:'Markus'},{id:'p5',name:'Christian P.'},{id:'p6',name:'Christian L.'}
     ];
     var DATES=[
-      {d:'2026-08-27',lbl:'Do 27.08.'},{d:'2026-09-03',lbl:'Do 03.09.'},{d:'2026-09-10',lbl:'Do 10.09.'},
-      {d:'2026-09-17',lbl:'Do 17.09.'},{d:'2026-09-24',lbl:'Do 24.09.'}
+      {d:'2026-08-25',lbl:'Di 25.08.'},{d:'2026-09-01',lbl:'Di 01.09.'},{d:'2026-09-08',lbl:'Di 08.09.'},
+      {d:'2026-09-15',lbl:'Di 15.09.'},{d:'2026-09-22',lbl:'Di 22.09.'}
     ];
     var CFG=window.TBT_CLOUD||{},BUCKET=CFG.bucket||'Fotos',sb=null;
     try{ sb=window.supabase&&window.supabase.createClient(CFG.url,CFG.anonKey); }catch(e){}
@@ -1812,7 +1812,7 @@ Christian L.</textarea>
       } else {
         var viable=[]; S.forEach(function(x,i){ if(x.no===0) viable.push(i); });
         if(!viable.length){
-          summary.innerHTML='😕 Kein Donnerstag, an dem <span class="hl">alle</span> können – überall hat mind. eine Person abgesagt.';
+          summary.innerHTML='😕 Kein Dienstag, an dem <span class="hl">alle</span> können – überall hat mind. eine Person abgesagt.';
         } else {
           var maxYes=Math.max.apply(null,viable.map(function(i){return S[i].yes;}));
           var near=viable.filter(function(i){return S[i].yes===maxYes;}).map(function(i){return DATES[i].lbl;});
