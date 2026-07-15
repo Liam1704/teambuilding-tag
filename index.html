@@ -789,19 +789,6 @@ Christian L.</textarea>
       </div>
     </section>
 
-    <section id="konami" class="konami reveal">
-      <div class="draw-eyebrow" style="color:var(--muted)">// geheim</div>
-      <p class="kmsg" id="kmsg">Psst … kennst du einen geheimen Code? Tippe ihn mit den Pfeilen.</p>
-      <div class="kpad" id="kpad">
-        <button class="up" data-k="ArrowUp" aria-label="hoch">↑</button>
-        <button class="left" data-k="ArrowLeft" aria-label="links">←</button>
-        <button class="down" data-k="ArrowDown" aria-label="runter">↓</button>
-        <button class="right" data-k="ArrowRight" aria-label="rechts">→</button>
-        <button class="kb" data-k="b">B</button>
-        <button class="ka" data-k="a">A</button>
-      </div>
-      <div class="kseq" id="kseq"></div>
-    </section>
 
     <footer>
       Zusammengestellt für die IT-Abteilung der Ärztekammer Wien
@@ -810,7 +797,6 @@ Christian L.</textarea>
 
   </main>
 
-  <div class="dvd" id="dvd">DVD</div>
   <canvas id="confetti"></canvas>
 
   <div class="lb" id="lb" role="dialog" aria-modal="true">
@@ -1701,51 +1687,6 @@ Christian L.</textarea>
 </script>
 
 <script>
-  // ---------- Konami code (arrow pad + keyboard) -> DVD logo ----------
-  (function(){
-    var pad=document.getElementById('kpad'),msg=document.getElementById('kmsg'),seqEl=document.getElementById('kseq'),dvd=document.getElementById('dvd');
-    if(!pad) return;
-    var CODE=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-    var SYM={ArrowUp:'\u2191',ArrowDown:'\u2193',ArrowLeft:'\u2190',ArrowRight:'\u2192',b:'B',a:'A'};
-    var idx=0,hinted=false;
-    function refresh(){seqEl.textContent=CODE.slice(0,idx).map(function(k){return SYM[k];}).join(' ');}
-    function push(k){
-      if(k===CODE[idx]){
-        idx++;msg.classList.remove('hint');
-        if(idx===CODE.length){idx=0;refresh();msg.textContent='\ud83d\udd79\ufe0f Konami aktiviert!';dvdGo();return;}
-        if(idx===8)msg.textContent='Fast! Jetzt B drücken \u2026';
-        else if(idx===9)msg.textContent='\u2026 und A!';
-      } else {
-        if(!hinted){hinted=true;msg.textContent='Versuche es mit dem Konami Code';msg.classList.add('hint');}
-        idx=(k===CODE[0])?1:0;
-      }
-      refresh();
-    }
-    pad.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.k)push(b.dataset.k);});
-    document.addEventListener('keydown',function(e){
-      var k=e.key;
-      if(k==='ArrowUp'||k==='ArrowDown'||k==='ArrowLeft'||k==='ArrowRight')push(k);
-      else if(k==='b'||k==='B')push('b');
-      else if(k==='a'||k==='A')push('a');
-    });
-    function dvdGo(){
-      if(dvd.classList.contains('on'))return;
-      dvd.classList.add('on');
-      var W=innerWidth,H=innerHeight,w=dvd.offsetWidth,h=dvd.offsetHeight;
-      var x=Math.random()*(W-w),y=Math.random()*(H-h),vx=4.4,vy=3.8;
-      var stop=Date.now()+20000; // ~20 Sekunden
-      function step(){
-        x+=vx;y+=vy;
-        if(x<=0){x=0;vx=-vx;}else if(x>=W-w){x=W-w;vx=-vx;}
-        if(y<=0){y=0;vy=-vy;}else if(y>=H-h){y=H-h;vy=-vy;}
-        dvd.style.transform='translate('+x+'px,'+y+'px)';
-        if(Date.now()<stop){requestAnimationFrame(step);}else{dvd.classList.remove('on');}
-      }
-      step();
-    }
-  })();
-</script>
-<script>
   // Service-Worker deaktiviert: sw.js raeumt alten Cache auf und meldet sich selbst ab.
   // Keine Neu-Registrierung mehr, damit sich nichts wieder einnistet.
   if('serviceWorker' in navigator){
@@ -1896,60 +1837,6 @@ Christian L.</textarea>
     render(); loadAll();
     setInterval(loadAll,15000);
     document.addEventListener('visibilitychange',function(){ if(!document.hidden) loadAll(); });
-  })();
-</script>
-<script>
-  // ---------- Mehr Easter Eggs: Tipp-Wörter, Logo-Spam, Konsolen-Gruß ----------
-  (function(){
-    var rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // Gruß in der Entwickler-Konsole (für die neugierige IT)
-    try{
-      console.log('%c🎯 Team-Building-Tag','font:700 22px Fredoka,system-ui,sans-serif;color:#FF3D71;');
-      console.log('%cNeugierig? Hier sind ein paar Easter Eggs versteckt. 😉\nProbier den Konami-Code, tippe „laser" oder „party" – oder klick 5× aufs Logo.','color:#4C5DF7;font-size:13px;line-height:1.5;');
-    }catch(e){}
-
-    function typing(){ var a=document.activeElement; return !!(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'||a.isContentEditable)); }
-
-    function laserBeam(){
-      if(rm) return;
-      var b=document.createElement('div'); b.className='egg-beam'; document.body.appendChild(b);
-      requestAnimationFrame(function(){ b.classList.add('go'); });
-      setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 850);
-    }
-    function emojiRain(emoji,count){
-      if(rm) return;
-      for(var i=0;i<count;i++){
-        var s=document.createElement('div'); s.className='egg-emoji'; s.textContent=emoji;
-        s.style.left=(Math.random()*100)+'vw';
-        var dur=2.2+Math.random()*1.8;
-        s.style.animationDuration=dur+'s';
-        s.style.animationDelay=(Math.random()*0.5)+'s';
-        s.style.fontSize=(1.3+Math.random()*1.5)+'rem';
-        document.body.appendChild(s);
-        (function(el,d){ setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, (d+1)*1000); })(s,dur);
-      }
-    }
-
-    // Tipp-Wörter
-    var buf='';
-    document.addEventListener('keydown',function(e){
-      if(typing()||!e.key||e.key.length!==1) return;
-      buf=(buf+e.key.toLowerCase()).slice(-14);
-      if(buf.slice(-5)==='laser'){ buf=''; laserBeam(); if(window.tbtToast) window.tbtToast('🔫 Pew pew!'); }
-      else if(buf.slice(-5)==='party'){ buf=''; if(window.tbtConfetti) window.tbtConfetti(); if(window.tbtToast) window.tbtToast('🎉 Party-Modus!'); }
-      else if(buf.slice(-3)==='pew'){ buf=''; laserBeam(); }
-    });
-
-    // Logo 5× schnell klicken -> 🎯-Regen
-    var brand=document.querySelector('.nav-brand');
-    if(brand){
-      var clicks=0,timer=null;
-      brand.addEventListener('click',function(){
-        clicks++; clearTimeout(timer); timer=setTimeout(function(){clicks=0;},1500);
-        if(clicks>=5){ clicks=0; emojiRain('🎯',22); if(window.tbtToast) window.tbtToast('🎯 Volltreffer!'); }
-      });
-    }
   })();
 </script>
 <script>
