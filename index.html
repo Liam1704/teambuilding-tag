@@ -546,6 +546,9 @@ html.laser-red h1.title,
   :root[data-theme="dark"] #skyfx .flake{color:#dfe0ff;}
   @keyframes skySnow{0%{transform:translateY(-24px) translateX(0) rotate(0);}100%{transform:translateY(102vh) translateX(40px) rotate(320deg);}}
   @media (prefers-reduced-motion:reduce){ #skyfx{display:none;} }
+  .poll-reset{margin-top:16px;display:inline-flex;align-items:center;gap:6px;font-family:"Nunito",sans-serif;font-weight:700;font-size:.8rem;color:var(--muted);background:transparent;border:1.5px solid var(--line);border-radius:10px;padding:7px 12px;cursor:pointer;transition:border-color .2s ease,color .2s ease,background-color .2s ease;}
+  .poll-reset:hover{border-color:var(--c-laser);color:var(--c-laser);}
+  .poll-reset:active{transform:scale(.97);}
 </style>
 </head>
 <body>
@@ -613,6 +616,7 @@ html.laser-red h1.title,
       <div class="poll-wrap"><table class="poll" id="pollTable"><thead></thead><tbody></tbody></table></div>
       <div class="poll-summary" id="pollSummary">Abstimmung wird geladen …</div>
       <p class="poll-note" id="pollNote"></p>
+      <button id="pollReset" class="poll-reset" type="button" title="Alle Stimmen löschen">🗑️ Abstimmung zurücksetzen</button>
     </section>
 
     <section id="ablauf">
@@ -1877,6 +1881,10 @@ Christian L.</textarea>
       }).catch(function(){ if(window.tbtToast) window.tbtToast('Zur\u00fccksetzen hat nicht geklappt \u2013 nochmal versuchen?'); });
     }
     window.tbtResetTermin=resetAllVotes;
+    var resetBtn=document.getElementById('pollReset');
+    if(resetBtn) resetBtn.addEventListener('click',function(){
+      if(confirm('Wirklich ALLE Abstimmungs-H\u00e4kchen l\u00f6schen? Das kann nicht r\u00fcckg\u00e4ngig gemacht werden.')) resetAllVotes();
+    });
     try{
       if(new URLSearchParams(location.search).get('termin')==='reset'){
         setTimeout(function(){
