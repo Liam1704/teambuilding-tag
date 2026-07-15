@@ -1861,6 +1861,30 @@ Christian L.</textarea>
       }).catch(function(){ note.textContent='Konnte die Stimmen gerade nicht laden – Verbindung prüfen.'; render(); });
     }
 
+    // --- Abstimmung zuruecksetzen: alle Stimmen loeschen (versteckt via ?termin=reset) ---
+    function resetAllVotes(){
+      if(!sb){ alert('Keine Cloud-Verbindung – Zuruecksetzen nicht moeglich.'); return; }
+      sb.storage.from(BUCKET).list('termin',{limit:500}).then(function(res){
+        if(res&&res.error) throw res.error;
+        var files=((res&&res.data)||[]).filter(function(o){return o.name&&/\.json$/.test(o.name);}).map(function(o){return 'termin/'+o.name;});
+        if(!files.length){ PEOPLE.forEach(function(p){ state[p.id]={votes:{},ts:null}; }); render(); if(window.tbtToast) window.tbtToast('Abstimmung war bereits leer.'); return; }
+        return sb.storage.from(BUCKET).remove(files).then(function(r){
+          if(r&&r.error) throw r.error;
+          PEOPLE.forEach(function(p){ state[p.id]={votes:{},ts:null}; });
+          render();
+          if(window.tbtToast) window.tbtToast('\u2713 Alle H\u00e4kchen zur\u00fcckgesetzt.');
+        });
+      }).catch(function(){ if(window.tbtToast) window.tbtToast('Zur\u00fccksetzen hat nicht geklappt \u2013 nochmal versuchen?'); });
+    }
+    window.tbtResetTermin=resetAllVotes;
+    try{
+      if(new URLSearchParams(location.search).get('termin')==='reset'){
+        setTimeout(function(){
+          if(confirm('Wirklich ALLE Abstimmungs-H\u00e4kchen l\u00f6schen? Das kann nicht r\u00fcckg\u00e4ngig gemacht werden.')) resetAllVotes();
+        }, 400);
+      }
+    }catch(e){}
+
     render(); loadAll();
     setInterval(loadAll,15000);
     document.addEventListener('visibilitychange',function(){ if(!document.hidden) loadAll(); });
