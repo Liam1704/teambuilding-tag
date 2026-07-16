@@ -516,19 +516,6 @@ html.laser-red h1.title,
   .cal-btn:active{transform:scale(.96);}
   @keyframes calIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
   @media (prefers-reduced-motion:reduce){.cal-btn.show{animation:none;}}
-  /* Maskottchen-Begleiter (Nerd) unten in der Ecke */
-  .mascot-buddy{position:fixed;left:14px;bottom:14px;z-index:180;display:flex;flex-direction:column;align-items:flex-start;gap:8px;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));}
-  .mascot-buddy.hide{display:none;}
-  .mascot-bubble{max-width:200px;background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:9px 12px;font-family:"Nunito",sans-serif;font-weight:700;font-size:.82rem;color:var(--ink);box-shadow:var(--shadow);opacity:0;transform:translateY(6px) scale(.96);transition:opacity .2s ease,transform .2s ease;pointer-events:none;}
-  .mascot-bubble.show{opacity:1;transform:none;}
-  .mascot-badge{position:relative;width:74px;height:74px;border-radius:18px;background:#fff;border:3px solid var(--ink);box-shadow:var(--shadow-hover);padding:3px;cursor:pointer;animation:buddyBob 3.4s ease-in-out infinite;transition:transform .2s ease;}
-  .mascot-badge:hover{transform:translateY(-3px);}
-  .mascot-badge:active{transform:scale(.94);}
-  .mascot-badge img{width:100%;height:100%;object-fit:contain;display:block;}
-  @keyframes buddyBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
-  .mascot-close{position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;border:2px solid var(--surface);font-size:.72rem;line-height:1;cursor:pointer;display:grid;place-items:center;z-index:2;padding:0;}
-  @media (max-width:480px){ .mascot-badge{width:60px;height:60px;} .mascot-bubble{max-width:150px;font-size:.76rem;} }
-  @media (prefers-reduced-motion:reduce){ .mascot-badge{animation:none;} }
   /* Ganzseitige Wetter-Ebene im Hintergrund */
   #skyfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
   html.laser-red #skyfx,html.laser-blue #skyfx{opacity:0;}
@@ -822,13 +809,6 @@ Christian L.</textarea>
     <iframe id="rrFrame" title="Überraschung" allow="autoplay; encrypted-media"></iframe>
   </div>
 
-  <div class="mascot-buddy" id="mascotBuddy" aria-live="polite">
-    <div class="mascot-bubble" id="mascotBubble"></div>
-    <div class="mascot-badge" id="mascotBadge" role="button" tabindex="0" aria-label="Maskottchen – Tipp anzeigen">
-      <button class="mascot-close" id="mascotClose" type="button" aria-label="Begleiter ausblenden">&times;</button>
-      <img src="mascot-nerd.png" alt="IT-Maskottchen">
-    </div>
-  </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2004,23 +1984,6 @@ Christian L.</textarea>
     }
     btn.addEventListener('click',download);
     if(window.tbtRegisterDateHandler) window.tbtRegisterDateHandler(function(ds){ dateStr=ds; btn.classList.add('show'); });
-  })();
-</script>
-<script>
-  // ---------- Maskottchen-Begleiter: Tipps + Ausblenden ----------
-  (function(){
-    var wrap=document.getElementById('mascotBuddy'); if(!wrap) return;
-    var badge=document.getElementById('mascotBadge'),bubble=document.getElementById('mascotBubble'),closeBtn=document.getElementById('mascotClose');
-    try{ if(sessionStorage.getItem('tbt_buddy_hidden')==='1'){ wrap.classList.add('hide'); return; } }catch(e){}
-    var tips=['Schon f\u00fcr einen Termin abgestimmt? \ud83d\uddd3\ufe0f','Probier das Mini-Spiel! \ud83c\udfaf','Ladet eure Fotos hoch \ud83d\udcf8','Team schon ausgelost? \ud83d\udd34\ud83d\udd35','Viel Spa\u00df beim Team-Tag! \ud83c\udfae'];
-    var i=0,hideT=null;
-    function say(msg){ bubble.textContent=msg; bubble.classList.add('show'); clearTimeout(hideT); hideT=setTimeout(function(){ bubble.classList.remove('show'); },4200); }
-    function poke(){ say(tips[i%tips.length]); i++; }
-    badge.addEventListener('click',poke);
-    badge.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); poke(); } });
-    closeBtn.addEventListener('click',function(e){ e.stopPropagation(); wrap.classList.add('hide'); try{ sessionStorage.setItem('tbt_buddy_hidden','1'); }catch(e){} });
-    // kleiner Gru\u00df nach kurzer Zeit
-    setTimeout(function(){ if(!wrap.classList.contains('hide')) say('Hi! \ud83d\udc4b Tippt mich f\u00fcr Tipps.'); },2500);
   })();
 </script>
 </body>
