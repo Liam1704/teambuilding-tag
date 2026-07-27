@@ -45,13 +45,16 @@
   .pdf-wrap iframe{display:block;width:100%;height:78vh;border:0;}
   footer{margin:40px 0 60px;text-align:center;color:var(--muted);font-size:.85rem;}
   footer .ver{font-family:"JetBrains Mono",monospace;display:block;margin-top:6px;opacity:.7;}
-  .menu{margin:12px 0 6px;border:1.5px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden;}
-  .menu h3{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1rem;margin:0;padding:14px 16px 6px;color:var(--accent);border-top:1px solid var(--line);}
-  .menu h3:first-child{border-top:0;}
-  .menu .row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:7px 16px;}
-  .menu .n{flex:1;font-weight:700;}
-  .menu .d{display:block;color:var(--muted);font-size:.82rem;font-weight:400;margin-top:1px;}
-  .menu .p{font-family:"JetBrains Mono",monospace;font-weight:700;white-space:nowrap;}
+  .menu-note{color:var(--muted);font-size:.9rem;margin:0 0 14px;}
+  .menu{margin-top:10px;}
+  .cat{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.15rem;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;margin:26px 0 4px;border-bottom:2px solid var(--line);padding-bottom:6px;}
+  .item{padding:11px 0;border-bottom:1px solid var(--line);}
+  .item:last-child{border-bottom:0;}
+  .item-top{display:flex;justify-content:space-between;gap:14px;align-items:baseline;}
+  .item-name{font-weight:800;font-size:1rem;}
+  .item-price{font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--accent);white-space:nowrap;}
+  .item-desc{color:var(--muted);font-size:.92rem;margin-top:2px;}
+  .item-sub{color:var(--muted);font-size:.86rem;margin-top:4px;padding-left:12px;border-left:2px solid var(--line);display:flex;justify-content:space-between;gap:10px;}
 </style>
 </head>
 <body style="--accent:#F4A81D">
@@ -76,29 +79,54 @@
   </header>
   <main class="wrap">
     <h2 class="menu-head">Frühstückskarte</h2>
-    <p class="hint">Frühstück gibt's im Café Landtmann täglich <strong>bis 11:30 Uhr</strong> – passt also perfekt zu unserem Start um 9:00. Hier eine Auswahl aus der Karte; die ganze Karte öffnest du über den Button darunter.</p>
-
+    <p class="menu-note">Die Frühstückskarte vom Café Landtmann – Frühstück täglich bis 11:30 Uhr. Preise in €, Änderungen vorbehalten.</p>
+    <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.landtmann.at/karte/fruehstueckskarte/" style="margin-bottom:8px">🔗 Auf landtmann.at ansehen</a>
     <div class="menu">
-      <h3>Klassiker</h3>
-      <div class="row"><div class="n">Wiener Frühstück<span class="d">Handsemmel, Öfferl-Bio-Brot, Butter, Marmelade/Honig, weiches Bio-Ei &middot; +Schinken/Salami/Gouda/Brie 8,70 €</span></div><span class="p">9,80 €</span></div>
-      <div class="row"><div class="n">Kaffeehaus Frühstück<span class="d">2 Eier im Glas, Schnittlauchbrot</span></div><span class="p">12,90 €</span></div>
-      <div class="row"><div class="n">Landtmann Granola<span class="d">Naturjoghurt, frische Beeren</span></div><span class="p">12,50 €</span></div>
-      <div class="row"><div class="n">Wiener Grießkoch<span class="d">mit Milch &amp; Zimt</span></div><span class="p">9,80 €</span></div>
-      <h3>Eierspeisen</h3>
-      <div class="row"><div class="n">Eierspeise<span class="d">3 Bio-Eier mit Schnittlauch</span></div><span class="p">13,00 €</span></div>
-      <div class="row"><div class="n">Ham &amp; Eggs / Bacon &amp; Eggs<span class="d">3 Eier, Öfferl-Bio-Brot</span></div><span class="p">16,00 €</span></div>
-      <div class="row"><div class="n">Eggs Benedict<span class="d">Schinken, Sauce Hollandaise, English Muffin</span></div><span class="p">16,00 €</span></div>
-      <div class="row"><div class="n">Avocado &amp; Bio-Ei<span class="d">Toastbrot, bunte Kresse</span></div><span class="p">11,00 €</span></div>
-      <h3>Kipferl &amp; Getränke</h3>
-      <div class="row"><div class="n">Briochekipferl / Butterkipferl</div><span class="p">5,20 €</span></div>
-      <div class="row"><div class="n">Französisches Croissant</div><span class="p">4,80 €</span></div>
-      <div class="row"><div class="n">Frischer Orangensaft (1/4 l)</div><span class="p">7,10 €</span></div>
-    </div>
-    <p class="hint small">Auswahl aus der Frühstückskarte · Preise Stand 2026, Änderungen möglich.</p>
-
-    <div class="actions">
-      <a class="btn btn-primary big" target="_blank" rel="noopener" href="https://www.landtmann.at/karte/fruehstueckskarte/">📄 Ganze Frühstückskarte öffnen</a>
-      <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.landtmann.at/">🔗 Auf landtmann.at ansehen</a>
+      <div class="cat">Klassiker</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Wiener Frühstück</span><span class="item-price">9,80</span></div>
+        <div class="item-desc">Handsemmel, Öfferl-Bio-Brot, Butter, Marmelade oder Honig, weiches Bio-Ei</div>
+        <div class="item-sub">+ Schinken, Salami, Bio-Gouda &amp; Brie <span class="item-price">+ 8,70</span></div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Kaffeehaus Frühstück</span><span class="item-price">12,90</span></div>
+        <div class="item-desc">2 Eier im Glas, Schnittlauchbrot</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Landtmann Granola</span><span class="item-price">12,50</span></div>
+        <div class="item-desc">gerührtes Naturjoghurt, frische Beeren</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Original Wiener Grießkoch</span><span class="item-price">9,80</span></div>
+        <div class="item-desc">mit Milch und Zimt</div>
+      </div>
+      <div class="cat">Eierspeisen</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Eierspeise</span><span class="item-price">13,00</span></div>
+        <div class="item-desc">3 Bio-Eier mit Schnittlauch</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Ham &amp; Eggs / Bacon &amp; Eggs</span><span class="item-price">16,00</span></div>
+        <div class="item-desc">3 Eier, 1 Scheibe Öfferl-Bio-Brot</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Eggs Benedict</span><span class="item-price">16,00</span></div>
+        <div class="item-desc">2 Bio-Eier, gebratener Schinken, Sauce Hollandaise, English Muffin</div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Avocado &amp; Bio-Ei</span><span class="item-price">11,00</span></div>
+        <div class="item-desc">½ Avocado, weiches Bio-Ei, Toastbrot, bunte Kresse</div>
+      </div>
+      <div class="cat">Kipferl &amp; Getränke</div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Briochekipferl / Butterkipferl</span><span class="item-price">5,20</span></div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Französisches Croissant</span><span class="item-price">4,80</span></div>
+      </div>
+      <div class="item">
+        <div class="item-top"><span class="item-name">Frischer Orangensaft (¼ l)</span><span class="item-price">7,10</span></div>
+      </div>
     </div>
 
     <footer>
