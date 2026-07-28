@@ -730,7 +730,6 @@ Christian L.</textarea>
           <button class="btn btn-ghost" id="refreshBtn">🔄 Aktualisieren</button>
         </div>
       </div>
-      <div id="voteLead" class="vote-lead" style="display:none"></div>
       <div class="gal-grid" id="galGrid"></div>
       <p class="gal-empty" id="galEmpty">Noch keine Fotos – macht das erste Bild vom Team-Tag! 📸</p>
     </section>
@@ -1398,62 +1397,12 @@ Christian L.</textarea>
 
     var LKEY='tbt_photos_v1',photos=[],cur=-1; // photos: [{name,url}]
 
-    // ---- "Foto des Tages": eine Stimme pro Person, live über die Cloud ----
-    var voterId='';
-    try{ voterId=localStorage.getItem('tbt_voter')||''; if(!voterId){ voterId=(Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-z0-9]/g,''); localStorage.setItem('tbt_voter',voterId); } }catch(e){ voterId='v'+Math.floor(Math.random()*1e9); }
-    var votes={},myVote=null,leaderName=null;
-    var prevLeader=null,votesLoadedOnce=false;
-    var VOTE_OPEN=new Date('2026-10-06T18:00:00+02:00').getTime(); // Voting oeffnet am Abend
-    function voteOpen(){ try{ if(new URLSearchParams(location.search).get('vote')==='open') return true; }catch(e){} return Date.now()>=VOTE_OPEN; }
-    if(window.tbtRegisterDateHandler) window.tbtRegisterDateHandler(function(ds){ try{ VOTE_OPEN=new Date(ds+'T18:00:00+02:00').getTime(); }catch(e){} });
-    function voteFile(name){ return 'votes/'+voterId+'__'+name; }
     function showToast(msg){
       var t=document.createElement('div'); t.className='tbt-toast'; t.textContent=msg; document.body.appendChild(t);
       requestAnimationFrame(function(){ t.classList.add('show'); });
       setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); },400); },3500);
     }
     window.tbtToast=showToast;
-    function loadVotes(){
-      if(!cloud) return Promise.resolve();
-      return cloud.storage.from(BUCKET).list('votes',{limit:2000}).then(function(res){
-        if(res.error) throw res.error;
-        var v={},mine=null;
-        (res.data||[]).forEach(function(o){
-          if(!o.name||!o.id) return;
-          var i=o.name.indexOf('__'); if(i<0) return;
-          var voter=o.name.slice(0,i),photo=o.name.slice(i+2);
-          v[photo]=(v[photo]||0)+1;
-          if(voter===voterId) mine=photo;
-        });
-        votes=v; myVote=mine;
-        leaderName=null; var best=0;
-        photos.forEach(function(pp){ var c=v[pp.name]||0; if(c>best){best=c;leaderName=pp.name;} });
-        var changed = votesLoadedOnce && voteOpen() && leaderName && leaderName!==prevLeader;
-        votesLoadedOnce=true; prevLeader=leaderName;
-        render(); updateLead();
-        if(changed){ if(window.tbtConfetti) window.tbtConfetti(); showToast('🎉 Neues Führungsfoto beim „Foto des Tages"!'); }
-      }).catch(function(){});
-    }
-    function toggleVote(p){
-      if(!cloud){ alert('Das Voting funktioniert nur mit eingerichteter Cloud.'); return; }
-      if(!voteOpen()){ alert('Das Voting fürs „Foto des Tages" öffnet am Abend (ab 18:00 Uhr).'); return; }
-      var was=myVote,ops=[];
-      if(was) ops.push(cloud.storage.from(BUCKET).remove([voteFile(was)]));
-      Promise.all(ops).then(function(){
-        if(was===p.name) return null; // gleiche noch mal -> Stimme zurückziehen
-        return cloud.storage.from(BUCKET).upload(voteFile(p.name),new Blob(['1'],{type:'text/plain'}),{upsert:true});
-      }).then(function(){ loadVotes(); }).catch(function(){ loadVotes(); });
-    }
-    function updateLead(){
-      var el=document.getElementById('voteLead'); if(!el) return;
-      if(!cloud){ el.style.display='none'; return; }
-      el.style.display='';
-      if(!voteOpen()){ el.textContent='❤️ Das Voting fürs „Foto des Tages" öffnet am Abend (ab 18:00 Uhr) – untertags werden ja noch fleißig Fotos gemacht.'; return; }
-      var total=0; Object.keys(votes).forEach(function(n){ total+=votes[n]; });
-      if(!leaderName||!total){ el.textContent='🏆 Foto des Tages: Voting ist offen – tippt auf ❤️ bei eurem Lieblingsfoto (eine Stimme pro Person).'; return; }
-      el.textContent='🏆 Foto des Tages: führt mit '+votes[leaderName]+' Stimme'+(votes[leaderName]===1?'':'n')+' · '+total+' Stimme'+(total===1?'':'n')+' insgesamt.';
-    }
-
     function render(){
       grid.innerHTML='';
       empty.classList.toggle('hide',photos.length>0);
@@ -1462,17 +1411,6 @@ Christian L.</textarea>
         var im=document.createElement('img');im.src=p.url;im.alt=p.name||'Foto';im.loading='lazy';
         d.appendChild(im);
         d.addEventListener('click',function(){openLb(idx);});
-        if(cloud&&voteOpen()){
-          if(leaderName&&p.name===leaderName&&(votes[leaderName]||0)>0){
-            var crown=document.createElement('div');crown.className='gal-crown';crown.textContent='🏆 Foto des Tages';d.appendChild(crown);
-          }
-          var vb=document.createElement('button');
-          vb.className='vote-btn'+(myVote===p.name?' voted':'');
-          vb.innerHTML='<span class="vh">'+(myVote===p.name?'❤️':'🤍')+'</span><span class="vc">'+(votes[p.name]||0)+'</span>';
-          vb.title=(myVote===p.name?'Stimme zurückziehen':'Für dieses Foto stimmen');
-          vb.addEventListener('click',function(e){e.stopPropagation();toggleVote(p);});
-          d.appendChild(vb);
-        }
         grid.appendChild(d);
       });
     }
@@ -1563,7 +1501,7 @@ Christian L.</textarea>
         photos=(res.data||[]).filter(function(o){return o.name&&o.name!=='.emptyFolderPlaceholder'&&o.id;}).map(function(o){
           return {name:o.name,url:cloud.storage.from(BUCKET).getPublicUrl(o.name).data.publicUrl};
         });
-        render(); loadVotes();
+        render();
       });
     }
 
